@@ -2,3 +2,4 @@ discord
 psycopg2-binary
 sqlalchemy
 alembic
+black
