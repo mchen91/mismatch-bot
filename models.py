@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy import Column, Integer, ForeignKey, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import DateTime
@@ -31,6 +31,14 @@ class Player(Base):
     name = Column(String, index=True)
 
 
+_player_record_association_table = Table(
+    "record_player_association",
+    Base.metadata,
+    Column("player_id", Integer, ForeignKey("player.id")),
+    Column("record_id", Integer, ForeignKey("record.id")),
+)
+
+
 class Record(Base):
     __tablename__ = "record"
     id = Column(Integer, primary_key=True)
@@ -42,7 +50,9 @@ class Record(Base):
     stage = relationship("Stage", backref="records")
 
     player_id = Column(Integer, ForeignKey("player.id"), nullable=True)
-    player = relationship("Player", backref="records")
+    players = relationship(
+        "Player", secondary=_player_record_association_table, backref="records"
+    )
 
     time = Column(Integer, index=True, nullable=True, default=None)
     partial_targets = Column(Integer, index=True, nullable=True, default=None)
