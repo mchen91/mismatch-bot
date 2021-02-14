@@ -49,7 +49,6 @@ class Record(Base):
     stage_id = Column(Integer, ForeignKey("stage.id"))
     stage = relationship("Stage", backref="records")
 
-    player_id = Column(Integer, ForeignKey("player.id"), nullable=True)
     players = relationship(
         "Player", secondary=_player_record_association_table, backref="records"
     )
