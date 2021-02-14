@@ -13,8 +13,7 @@ class Character(Base):
     id = Column(Integer, primary_key=True)
 
     name = Column(String, index=True)
-    position = Column(Integer)
-    records = relationship("Record", back_populates="character")
+    position = Column(Integer, unique=True)
 
 
 class Stage(Base):
@@ -22,8 +21,7 @@ class Stage(Base):
     id = Column(Integer, primary_key=True)
 
     name = Column(String, index=True)
-    position = Column(Integer)
-    records = relationship("Record", back_populates="stage")
+    position = Column(Integer, unique=True)
 
 
 class Player(Base):
@@ -38,13 +36,13 @@ class Record(Base):
     id = Column(Integer, primary_key=True)
 
     character_id = Column(Integer, ForeignKey("character.id"))
-    character = relationship("Character", back_populates="records")
+    character = relationship("Character", backref="records")
 
     stage_id = Column(Integer, ForeignKey("stage.id"))
-    stage = relationship("Stage", back_populates="records")
+    stage = relationship("Stage", backref="records")
 
-    player_id = Column(Integer, ForeignKey("stage.id"), nullable=True)
-    player = relationship("Player", back_populates="records")
+    player_id = Column(Integer, ForeignKey("player.id"), nullable=True)
+    player = relationship("Player", backref="records")
 
     time = Column(Integer, index=True, nullable=True, default=None)
     partial_targets = Column(Integer, index=True, nullable=True, default=None)
