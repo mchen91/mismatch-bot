@@ -1,6 +1,6 @@
 from db import get_session
 from models import Character, Player, Record, Stage
-from frame_conversion import time_string_to_frames
+from use_cases.frame_conversion import time_string_to_frames
 
 
 def add_record(
@@ -61,3 +61,17 @@ def add_record(
             new_record.players.append(player)
         session.add(new_record)
     session.commit()
+
+
+def get_record(*, character_name, stage_name):
+    session = get_session()
+    character = Character.find_by_name(character_name, session)
+    stage = Stage.find_by_name(stage_name, session)
+    return (
+        session.query(Record)
+        .filter(
+            Record.character == character,
+            Record.stage == stage,
+        )
+        .first()
+    )
