@@ -39,7 +39,9 @@ async def get(ctx, character_name, stage_name):
     record = get_record(character_name=character_name, stage_name=stage_name)
 
     if record:
-        players_string = ",".join(player.name for player in record.players) or "Anonymous"
+        players_string = (
+            ",".join(player.name for player in record.players) or "Anonymous"
+        )
         video_link_string = f"at {record.video_link}" if record.video_link else ""
         record_value = (
             f"{record.partial_targets} targets"

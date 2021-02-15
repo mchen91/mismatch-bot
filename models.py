@@ -17,7 +17,12 @@ class Character(Base):
     @staticmethod
     def find_by_name(name, session):
         try:
-            return session.query(Character).filter(Character.name == name).one()
+            alias = (
+                session.query(CharacterStageAlias)
+                .filter(CharacterStageAlias.name.ilike(name))
+                .one()
+            )
+            return alias.character
         except Exception as e:
             raise ValueError(f"could not find character matching {name}")
 
@@ -32,7 +37,12 @@ class Stage(Base):
     @staticmethod
     def find_by_name(name, session):
         try:
-            return session.query(Stage).filter(Stage.name == name).one()
+            alias = (
+                session.query(CharacterStageAlias)
+                .filter(CharacterStageAlias.name.ilike(name))
+                .one()
+            )
+            return alias.stage
         except Exception as e:
             raise ValueError(f"could not find stage matching {name}")
 
@@ -81,3 +91,26 @@ class Record(Base):
     date_updated = Column(
         DateTime, index=True, default=datetime.now(), onupdate=datetime.now()
     )
+
+
+class CharacterStageAlias(Base):
+    __tablename__ = "character_stage_alias"
+    id = Column(Integer, primary_key=True)
+
+    name = Column(String, index=True)
+    character_id = Column(Integer, ForeignKey("character.id"))
+    character = relationship("Character", backref="aliases")
+
+    stage_id = Column(Integer, ForeignKey("stage.id"))
+    stage = relationship("Stage", backref="aliases")
+
+    @staticmethod
+    def add_alias(aliased_name, known_name, session):
+        character = (
+            session.query(Character).filter(Character.name.ilike(known_name)).first()
+        )
+        stage = session.query(Stage).filter(Stage.name.ilike(known_name)).first()
+        alias = CharacterStageAlias(name=aliased_name, character=character, stage=stage)
+        session.add(alias)
+        session.commit()
+        session.close()
