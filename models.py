@@ -4,7 +4,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.sqltypes import DateTime
 
-
 Base = declarative_base()
 
 
@@ -15,6 +14,13 @@ class Character(Base):
     name = Column(String, index=True)
     position = Column(Integer, unique=True)
 
+    @staticmethod
+    def find_by_name(name, session):
+        try:
+            return session.query(Character).filter(Character.name == name).one()
+        except Exception as e:
+            raise ValueError(f"could not find character matching {name}")
+
 
 class Stage(Base):
     __tablename__ = "stage"
@@ -23,12 +29,26 @@ class Stage(Base):
     name = Column(String, index=True)
     position = Column(Integer, unique=True)
 
+    @staticmethod
+    def find_by_name(name, session):
+        try:
+            return session.query(Stage).filter(Stage.name == name).one()
+        except Exception as e:
+            raise ValueError(f"could not find stage matching {name}")
+
 
 class Player(Base):
     __tablename__ = "player"
     id = Column(Integer, primary_key=True)
 
     name = Column(String, index=True)
+
+    @staticmethod
+    def find_by_name(name, session):
+        try:
+            return session.query(Player).filter(Player.name == name).one()
+        except Exception as e:
+            raise ValueError(f"could not find player matching {name}")
 
 
 _player_record_association_table = Table(
