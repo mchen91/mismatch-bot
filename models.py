@@ -97,20 +97,9 @@ class CharacterStageAlias(Base):
     __tablename__ = "character_stage_alias"
     id = Column(Integer, primary_key=True)
 
-    name = Column(String, index=True)
+    name = Column(String, index=True, unique=True)
     character_id = Column(Integer, ForeignKey("character.id"))
     character = relationship("Character", backref="aliases")
 
     stage_id = Column(Integer, ForeignKey("stage.id"))
     stage = relationship("Stage", backref="aliases")
-
-    @staticmethod
-    def add_alias(aliased_name, known_name, session):
-        character = (
-            session.query(Character).filter(Character.name.ilike(known_name)).first()
-        )
-        stage = session.query(Stage).filter(Stage.name.ilike(known_name)).first()
-        alias = CharacterStageAlias(name=aliased_name, character=character, stage=stage)
-        session.add(alias)
-        session.commit()
-        session.close()

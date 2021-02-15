@@ -1,10 +1,10 @@
-from db import get_session
 from models import Character, Player, Record, Stage
 from use_cases.frame_conversion import time_string_to_frames
 
 
 def add_record(
     *,
+    session,
     character_name,
     stage_name,
     player_name=None,
@@ -12,7 +12,6 @@ def add_record(
     partial_targets=None,
     video_link=None
 ):
-    session = get_session()
     character = Character.find_by_name(character_name, session)
     stage = Stage.find_by_name(stage_name, session)
     player = Player.find_by_name(player_name, session) if player_name else None
@@ -25,32 +24,32 @@ def add_record(
         Record.stage == stage,
     )
     if prev_records.first():
-        prev_record = prev_records.one()
-        if prev_record.partial_targets is not None:
+        record = prev_records.one()
+        if record.partial_targets is not None:
             if partial_targets:
-                if partial_targets == prev_record.partial_targets:
+                if partial_targets == record.partial_targets:
                     if player:
-                        prev_record.players.append(player)
-                    if not prev_record.video_link and video_link:
-                        prev_record.video_link = video_link
-                elif partial_targets > prev_record.partial_targets:
-                    prev_record.partial_targets = partial_targets
-                    prev_record.players = [player] if player else []
-                    prev_record.video_link = video_link
+                        record.players.append(player)
+                    if not record.video_link and video_link:
+                        record.video_link = video_link
+                elif partial_targets > record.partial_targets:
+                    record.partial_targets = partial_targets
+                    record.players = [player] if player else []
+                    record.video_link = video_link
             elif time_frames:
-                prev_record.partial_targets = None
-                prev_record.time = time_frames
+                record.partial_targets = None
+                record.time = time_frames
         else:
-            if prev_record.time == time_frames:
-                prev_record.players.append(player)
-                if not prev_record.video_link and video_link:
-                    prev_record.video_link = video_link
-            elif time_frames < prev_record.time:
-                prev_record.time = time_frames
-                prev_record.video_link = video_link
-                prev_record.players = [player]
+            if record.time == time_frames:
+                record.players.append(player)
+                if not record.video_link and video_link:
+                    record.video_link = video_link
+            elif time_frames < record.time:
+                record.time = time_frames
+                record.video_link = video_link
+                record.players = [player]
     else:
-        new_record = Record(
+        record = Record(
             character=character,
             stage=stage,
             time=time_frames,
@@ -58,13 +57,13 @@ def add_record(
             video_link=video_link,
         )
         if player:
-            new_record.players.append(player)
-        session.add(new_record)
+            record.players.append(player)
+        session.add(record)
     session.commit()
+    return record
 
 
-def get_record(*, character_name, stage_name):
-    session = get_session()
+def get_record(*, session, character_name, stage_name):
     character = Character.find_by_name(character_name, session)
     stage = Stage.find_by_name(stage_name, session)
     return (
