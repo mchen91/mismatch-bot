@@ -42,7 +42,9 @@ async def get(ctx, character_name, stage_name):
     from use_cases.frame_conversion import frames_to_time_string
 
     session = get_session()
-    record = get_record(session=session, character_name=character_name, stage_name=stage_name)
+    record = get_record(
+        session=session, character_name=character_name, stage_name=stage_name
+    )
 
     if record:
         players_string = (
@@ -68,7 +70,9 @@ async def aliasc(ctx, aliased_name, known_name):
 
     session = get_session()
     try:
-        new_alias = add_char_stage_alias(session=session, aliased_name=aliased_name, known_name=known_name)
+        new_alias = add_char_stage_alias(
+            session=session, aliased_name=aliased_name, known_name=known_name
+        )
     except ValueError as error:
         msg = str(error)
     else:
@@ -79,6 +83,24 @@ async def aliasc(ctx, aliased_name, known_name):
         else:
             aliased = f"only stage {new_alias.stage}"
         msg = f"Aliased {aliased_name} to {aliased}"
+    await ctx.send(msg)
+    session.close()
+
+
+@bot.command()
+@is_me()
+async def aliasp(ctx, aliased_name, known_name):
+    from use_cases.aliases import add_player_alias
+
+    session = get_session()
+    try:
+        new_alias = add_player_alias(
+            session=session, aliased_name=aliased_name, known_name=known_name
+        )
+    except ValueError as error:
+        msg = str(error)
+    else:
+        msg = f"Aliased {aliased_name} to {new_alias.player.name}"
     await ctx.send(msg)
     session.close()
 

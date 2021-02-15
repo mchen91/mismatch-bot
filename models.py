@@ -103,3 +103,12 @@ class CharacterStageAlias(Base):
 
     stage_id = Column(Integer, ForeignKey("stage.id"))
     stage = relationship("Stage", backref="aliases")
+
+
+class PlayerAlias(Base):
+    __tablename__ = "player_alias"
+    id = Column(Integer, primary_key=True)
+
+    name = Column(String, index=True, unique=True)
+    player_id = Column(Integer, ForeignKey("player.id"))
+    player = relationship("Player", backref="aliases")
