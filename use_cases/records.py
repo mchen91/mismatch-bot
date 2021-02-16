@@ -1,27 +1,16 @@
 from models import Record
-from use_cases.character import get_character_by_name
-from use_cases.frame_conversion import time_string_to_frames
-from use_cases.player import get_player_by_name
-from use_cases.stage import get_stage_by_name
 
 
 def add_record(
     *,
     session,
-    character_name,
-    stage_name,
-    player_name=None,
-    time_string=None,
+    character,
+    stage,
+    player=None,
+    time=None,
     partial_targets=None,
     video_link=None
 ):
-    character = get_character_by_name(character_name, session)
-    stage = get_stage_by_name(stage_name, session)
-    player = get_player_by_name(player_name, session) if player_name else None
-
-    time_frames = (
-        time_string_to_frames(time_string) if partial_targets is None else None
-    )
     prev_records = session.query(Record).filter(
         Record.character == character,
         Record.stage == stage,
@@ -39,23 +28,23 @@ def add_record(
                     record.partial_targets = partial_targets
                     record.players = [player] if player else []
                     record.video_link = video_link
-            elif time_frames:
+            elif time:
                 record.partial_targets = None
-                record.time = time_frames
+                record.time = time
         else:
-            if record.time == time_frames:
+            if record.time == time:
                 record.players.append(player)
                 if not record.video_link and video_link:
                     record.video_link = video_link
-            elif time_frames < record.time:
-                record.time = time_frames
+            elif time < record.time:
+                record.time = time
                 record.video_link = video_link
                 record.players = [player]
     else:
         record = Record(
             character=character,
             stage=stage,
-            time=time_frames,
+            time=time,
             partial_targets=partial_targets,
             video_link=video_link,
         )
