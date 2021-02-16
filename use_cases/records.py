@@ -1,5 +1,8 @@
-from models import Character, Player, Record, Stage
+from models import Record
+from use_cases.character import get_character_by_name
 from use_cases.frame_conversion import time_string_to_frames
+from use_cases.player import get_player_by_name
+from use_cases.stage import get_stage_by_name
 
 
 def add_record(
@@ -12,9 +15,9 @@ def add_record(
     partial_targets=None,
     video_link=None
 ):
-    character = Character.find_by_name(character_name, session)
-    stage = Stage.find_by_name(stage_name, session)
-    player = Player.find_by_name(player_name, session) if player_name else None
+    character = get_character_by_name(character_name, session)
+    stage = get_stage_by_name(stage_name, session)
+    player = get_player_by_name(player_name, session) if player_name else None
 
     time_frames = (
         time_string_to_frames(time_string) if partial_targets is None else None
@@ -63,9 +66,7 @@ def add_record(
     return record
 
 
-def get_record(*, session, character_name, stage_name):
-    character = Character.find_by_name(character_name, session)
-    stage = Stage.find_by_name(stage_name, session)
+def get_record(*, session, character, stage):
     return (
         session.query(Record)
         .filter(

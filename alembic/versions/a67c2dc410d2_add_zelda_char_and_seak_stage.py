@@ -17,14 +17,15 @@ depends_on = None
 
 
 def upgrade():
-    from models import Character, Stage
     from use_cases.aliases import add_char_stage_alias
+    from use_cases.character import create_character
+    from use_cases.stage import create_stage
 
     connection = op.get_bind()
     Session = sa.orm.sessionmaker()
     session = Session(bind=connection)
-    Stage.add_stage(session=session, name="Seak", position=25)
-    Character.add_character(session=session, name="Zelda", position=25)
+    create_stage(session=session, name="Seak", position=25)
+    create_character(session=session, name="Zelda", position=25)
     add_char_stage_alias(
         session=session, aliased_name="Sheik", known_name="Zelda", stage_only=True
     )

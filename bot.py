@@ -4,8 +4,9 @@ from discord.ext import commands
 from db import get_session
 
 MY_ID = 97904188918345728
+COMMAND_PREFIX = "-mm "
 
-bot = commands.Bot(command_prefix="-mm ")
+bot = commands.Bot(command_prefix=COMMAND_PREFIX)
 
 
 def is_me():
@@ -37,14 +38,32 @@ async def set(ctx, character_name, stage_name, time_string, player_name, video_l
 
 
 @bot.command()
-async def get(ctx, character_name, stage_name):
-    from use_cases.records import get_record
+async def wr(ctx, *, char_and_stage):
+    from use_cases.character import get_character_by_name
     from use_cases.frame_conversion import frames_to_time_string
+    from use_cases.records import get_record
+    from use_cases.stage import get_stage_by_name
+
+    combo_array = char_and_stage.split("/")
+    if len(combo_array) != 2:
+        await ctx.send(
+            "syntax: {COMMAND_PREFIX}<char>/<stage>. e.g. `-mm young link/samus`"
+        )
+        return
+    character_name, stage_name = [s.strip() for s in combo_array]
 
     session = get_session()
-    record = get_record(
-        session=session, character_name=character_name, stage_name=stage_name
-    )
+    try:
+        character = get_character_by_name(character_name, session)
+    except ValueError as error:
+        await ctx.send(str(error))
+        return
+    try:
+        stage = get_stage_by_name(stage_name, session)
+    except ValueError as error:
+        await ctx.send(str(error))
+        return
+    record = get_record(session=session, character=character, stage=stage)
 
     if record:
         players_string = (
@@ -58,7 +77,7 @@ async def get(ctx, character_name, stage_name):
         )
         msg = f"{record.character.name}/{record.stage.name} - {record_value} by {players_string} {video_link_string}"
     else:
-        msg = f"No record found for {character_name}/{stage_name}"
+        msg = f"No record found for {character.name}/{stage.name}"
     await ctx.send(msg)
     session.close()
 
@@ -103,6 +122,13 @@ async def aliasp(ctx, aliased_name, known_name):
         msg = f"Aliased {aliased_name} to {new_alias.player.name}"
     await ctx.send(msg)
     session.close()
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        return
+    raise error
 
 
 bot.run(os.environ["DISCORD_TOKEN"])
