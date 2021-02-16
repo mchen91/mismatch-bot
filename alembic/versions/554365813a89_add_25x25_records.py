@@ -5,9 +5,6 @@ Revises: a67c2dc410d2
 Create Date: 2021-02-15 20:36:37.952280
 
 """
-from functools import partial
-from use_cases.stage import get_stage_by_name
-from use_cases.character import get_character_by_name
 from alembic import op
 import sqlalchemy as sa
 
@@ -22,8 +19,10 @@ depends_on = None
 def upgrade():
     from models import Character, Stage
     from use_cases.aliases import add_char_stage_alias, add_player_alias
+    from use_cases.character import get_character_by_name
     from use_cases.player import get_player_by_name
     from use_cases.records import add_record, get_record
+    from use_cases.stage import get_stage_by_name
 
     connection = op.get_bind()
     Session = sa.orm.sessionmaker()
