@@ -155,6 +155,86 @@ async def aliasp(ctx, aliased_name, known_name):
     session.close()
 
 
+@bot.command(
+    aliases=["char", "char-records", "character", "charrecords", "character-records"]
+)
+async def character_records(ctx, character_name):
+    from use_cases.character import get_character_by_name
+    from use_cases.frame_conversion import frames_to_time_string
+    from use_cases.records import get_records_by_character
+
+    session = get_session()
+    character = get_character_by_name(character_name, session)
+    records = get_records_by_character(session=session, character=character)
+    description_lines = [f"{character.name} Character Records"]
+    for record in records:
+        record_string = (
+            f"{record.partial_targets} target"
+            if record.partial_targets == 1
+            else f"{record.partial_targets} targets"
+            if record.time is None
+            else frames_to_time_string(record.time)
+        )
+        if record.video_link:
+            record_string = f"[{record_string}]({record.video_link})"
+        players = (
+            ",".join(player.name for player in record.players)
+            if record.players
+            else "Anonymous"
+        )
+        description_lines.append(f"{record.stage.name} - {record_string} - {players}")
+    total_frames = sum(
+        0 if (record.time is None or record.stage.position > 24) else record.time
+        for record in records
+    )
+    description_lines.append(f"25 Stage Total: {frames_to_time_string(total_frames)}")
+    embed = Embed()
+    embed.description = "\n".join(description_lines)
+    await ctx.send(embed=embed)
+    session.close()
+
+
+@bot.command(aliases=["stage", "stagerecords", "stage-records"])
+async def stage_records(ctx, stage_name):
+    from use_cases.stage import get_stage_by_name
+    from use_cases.frame_conversion import frames_to_time_string
+    from use_cases.records import get_records_by_stage
+
+    session = get_session()
+    stage = get_stage_by_name(stage_name, session)
+    records = get_records_by_stage(session=session, stage=stage)
+    description_lines = [f"{stage.name} Stage Records"]
+    for record in records:
+        record_string = (
+            f"{record.partial_targets} target"
+            if record.partial_targets == 1
+            else f"{record.partial_targets} targets"
+            if record.time is None
+            else frames_to_time_string(record.time)
+        )
+        if record.video_link:
+            record_string = f"[{record_string}]({record.video_link})"
+        players = (
+            ",".join(player.name for player in record.players)
+            if record.players
+            else "Anonymous"
+        )
+        description_lines.append(
+            f"{record.character.name} - {record_string} - {players}"
+        )
+    total_frames = sum(
+        0 if (record.time is None or record.character.position > 24) else record.time
+        for record in records
+    )
+    description_lines.append(
+        f"25 Character Total: {frames_to_time_string(total_frames)}"
+    )
+    embed = Embed()
+    embed.description = "\n".join(description_lines)
+    await ctx.send(embed=embed)
+    session.close()
+
+
 @bot.command(aliases=["wt", "worst", "worsttotal", "wtotal"])
 async def worst_total(ctx):
     from use_cases.frame_conversion import frames_to_time_string
@@ -170,6 +250,7 @@ async def worst_total(ctx):
     embed = Embed()
     embed.description = "\n".join(description_lines)
     await ctx.send(embed=embed)
+    session.close()
 
 
 @bot.event

@@ -1,4 +1,4 @@
-from models import Record
+from models import Character, Record, Stage
 
 
 def add_record(
@@ -63,4 +63,22 @@ def get_record(*, session, character, stage):
             Record.stage == stage,
         )
         .first()
+    )
+
+
+def get_records_by_character(*, session, character):
+    return (
+        session.query(Record)
+        .join(Stage)
+        .filter(Record.character == character)
+        .order_by(Stage.position)
+    )
+
+
+def get_records_by_stage(*, session, stage):
+    return (
+        session.query(Record)
+        .join(Character)
+        .filter(Record.stage == stage)
+        .order_by(Character.position)
     )
