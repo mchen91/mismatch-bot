@@ -1,4 +1,5 @@
 import os
+from discord import Embed
 from discord.ext import commands
 
 from db import get_session
@@ -18,7 +19,7 @@ def is_me():
 
 @bot.command()
 @is_me()
-async def set(ctx, character_name, stage_name, time_string, player_name, video_link):
+async def add(ctx, character_name, stage_name, time_string, player_name, video_link):
     from use_cases.character import get_character_by_name
     from use_cases.frame_conversion import time_string_to_frames
     from use_cases.player import get_player_by_name
@@ -60,7 +61,7 @@ async def set(ctx, character_name, stage_name, time_string, player_name, video_l
         video_link=video_link,
     )
     await ctx.send(
-        f"Added {record.character.name}/{record.stage.name} - {time_string} by {player_name} at {video_link}"
+        f"Added {record.character.name}/{record.stage.name} - {time_string} by {player.name} at {video_link}"
     )
     session.close()
 
@@ -152,6 +153,23 @@ async def aliasp(ctx, aliased_name, known_name):
         msg = f"Aliased {aliased_name} to {new_alias.player.name}"
     await ctx.send(msg)
     session.close()
+
+
+@bot.command(aliases=["wt", "worst", "worsttotal", "wtotal"])
+async def worst_total(ctx):
+    from use_cases.frame_conversion import frames_to_time_string
+    from use_cases.total import get_worst_total_records
+
+    session = get_session()
+    records, improvements, total = get_worst_total_records(session)
+    description_lines = [
+        f"{record.character.name} on {record.stage.name} ([{frames_to_time_string(record.time)}]({record.video_link}) ➛ {frames_to_time_string(improvement)})"
+        for (record, improvement) in zip(records, improvements)
+    ]
+    description_lines.append(f"Total: {frames_to_time_string(total)}")
+    embed = Embed()
+    embed.description = "\n".join(description_lines)
+    await ctx.send(embed=embed)
 
 
 @bot.event

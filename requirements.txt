@@ -1,5 +1,6 @@
-discord
-psycopg2-binary
-sqlalchemy
 alembic
 black
+discord
+psycopg2-binary
+scipy
+sqlalchemy

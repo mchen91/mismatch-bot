@@ -14,6 +14,9 @@ class Character(Base):
     name = Column(String, index=True)
     position = Column(Integer, unique=True)
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__}({self.name})>"
+
 
 class Stage(Base):
     __tablename__ = "stage"
@@ -22,12 +25,18 @@ class Stage(Base):
     name = Column(String, index=True)
     position = Column(Integer, unique=True)
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__}({self.name})>"
+
 
 class Player(Base):
     __tablename__ = "player"
     id = Column(Integer, primary_key=True)
 
     name = Column(String, index=True)
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}({self.name})>"
 
 
 _player_record_association_table = Table(
@@ -60,6 +69,9 @@ class Record(Base):
     date_updated = Column(
         DateTime, index=True, default=datetime.now(), onupdate=datetime.now()
     )
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}({self.character.name}/{self.stage.name} ({self.time}))>"
 
 
 class CharacterStageAlias(Base):
