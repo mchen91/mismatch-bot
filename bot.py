@@ -59,7 +59,7 @@ async def wr(ctx, *, char_and_stage):
 
 @bot.command(
     aliases=["character"],
-    help=f"Shows records for a given character, e.g. {COMMAND_PREFIX} char yoshi",
+    help=f"Shows records for a given character, e.g. {COMMAND_PREFIX}char yoshi",
 )
 async def char(ctx, character_name):
     from use_cases.character import get_character_by_name
@@ -99,7 +99,7 @@ async def char(ctx, character_name):
 
 
 @bot.command(
-    help="Shows records for a given stage, e.g. {COMMAND_PREFIX} stage mario",
+    help=f"Shows records for a given stage, e.g. {COMMAND_PREFIX}stage mario",
 )
 async def stage(ctx, stage_name):
     from use_cases.embeds import create_embeds
