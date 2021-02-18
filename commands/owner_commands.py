@@ -13,10 +13,10 @@ def is_me():
 
 
 class OwnerCommand(commands.Cog):
-    @commands.command(hidden=True)
+    @commands.command()
     @is_me()
     async def add(
-        ctx, character_name, stage_name, time_string, player_name, video_link
+        self, ctx, character_name, stage_name, time_string, player_name, video_link
     ):
         from use_cases.character import get_character_by_name
         from use_cases.frame_conversion import time_string_to_frames
@@ -63,9 +63,9 @@ class OwnerCommand(commands.Cog):
         )
         session.close()
 
-    @commands.command(hidden=True)
+    @commands.command()
     @is_me()
-    async def aliasc(ctx, aliased_name, known_name):
+    async def aliasc(self, ctx, aliased_name, known_name):
         from use_cases.aliases import add_char_stage_alias
 
         session = get_session()
@@ -86,9 +86,9 @@ class OwnerCommand(commands.Cog):
         await ctx.send(msg)
         session.close()
 
-    @commands.command(hidden=True)
+    @commands.command()
     @is_me()
-    async def aliasp(ctx, aliased_name, known_name):
+    async def aliasp(self, ctx, aliased_name, known_name):
         from use_cases.aliases import add_player_alias
 
         session = get_session()
