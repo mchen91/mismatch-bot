@@ -58,7 +58,7 @@ async def wr(ctx, *, char_and_stage):
 
 
 @bot.command(
-    aliases=["char-records", "character", "character-records"],
+    aliases=["character"],
     help=f"Shows records for a given character, e.g. {COMMAND_PREFIX} char yoshi",
 )
 async def char(ctx, character_name):
@@ -99,7 +99,6 @@ async def char(ctx, character_name):
 
 
 @bot.command(
-    aliases=["stagerecords", "stage-records"],
     help="Shows records for a given stage, e.g. {COMMAND_PREFIX} stage mario",
 )
 async def stage(ctx, stage_name):
@@ -137,6 +136,47 @@ async def stage(ctx, stage_name):
     description_lines.append(
         f"25 Character Total: {frames_to_time_string(total_frames)}"
     )
+    embeds = create_embeds(description_lines)
+    for embed in embeds:
+        await ctx.send(embed=embed)
+    session.close()
+
+
+@bot.command(
+    aliases=["stage-records"],
+    help="Shows fastest records for each stage",
+)
+async def stagerecords(ctx):
+    from use_cases.embeds import create_embeds
+    from use_cases.frame_conversion import frames_to_time_string
+    from use_cases.records import get_fastest_stage_records
+
+    session = get_session()
+    records = get_fastest_stage_records(session=session)
+    description_lines = [f"Fastest Stage Records"]
+    for record in records:
+        record_string = (
+            f"{record.partial_targets} target"
+            if record.partial_targets == 1
+            else f"{record.partial_targets} targets"
+            if record.time is None
+            else frames_to_time_string(record.time)
+        )
+        if record.video_link:
+            record_string = f"[{record_string}]({record.video_link})"
+        players = (
+            ",".join(player.name for player in record.players)
+            if record.players
+            else "Anonymous"
+        )
+        description_lines.append(
+            f"{record.character.name}/{record.stage.name} - {record_string} - {players}"
+        )
+    total_frames = sum(
+        0 if (record.time is None or record.stage.position > 24) else record.time
+        for record in records
+    )
+    description_lines.append(f"25 Stage Total: {frames_to_time_string(total_frames)}")
     embeds = create_embeds(description_lines)
     for embed in embeds:
         await ctx.send(embed=embed)

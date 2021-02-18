@@ -82,3 +82,16 @@ def get_records_by_stage(*, session, stage):
         .filter(Record.stage == stage)
         .order_by(Character.position)
     )
+
+
+def get_fastest_stage_records(*, session):
+    # TODO: optimize num queries?
+    records = []
+    for stage in session.query(Stage).order_by(Stage.position):
+        stage_records = session.query(Record).filter(Record.stage == stage)
+        fastest_record = min(
+            stage_records,
+            key=lambda record: float("inf") if record.time is None else record.time,
+        )
+        records.append(fastest_record)
+    return records
