@@ -1,3 +1,5 @@
+from difflib import SequenceMatcher
+
 from models import CharacterStageAlias, Stage
 from use_cases.aliases import add_char_stage_alias
 
@@ -5,12 +7,23 @@ from use_cases.aliases import add_char_stage_alias
 def get_stage_by_name(name, session):
     alias = (
         session.query(CharacterStageAlias)
-        .filter(CharacterStageAlias.name.ilike(name))
+        .filter(CharacterStageAlias.stage != None, CharacterStageAlias.name.ilike(name))
         .first()
     )
-    if not alias:
-        raise ValueError(f'Could not find stage matching "{name}"')
-    return alias.stage
+    if alias:
+        return alias.stage
+    all_aliases = (
+        session.query(CharacterStageAlias)
+        .filter(CharacterStageAlias.stage != None)
+        .all()
+    )
+    closest_alias = max(
+        all_aliases,
+        key=lambda alias: SequenceMatcher(
+            lambda x: x in " .", alias.name.lower(), name.lower()
+        ).ratio(),
+    )
+    return closest_alias.stage
 
 
 def create_stage(*, session, name, position):

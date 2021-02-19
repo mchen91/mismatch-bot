@@ -1,3 +1,5 @@
+from difflib import SequenceMatcher
+
 from models import Character, CharacterStageAlias
 from use_cases.aliases import add_char_stage_alias
 
@@ -5,12 +7,25 @@ from use_cases.aliases import add_char_stage_alias
 def get_character_by_name(name, session):
     alias = (
         session.query(CharacterStageAlias)
-        .filter(CharacterStageAlias.name.ilike(name))
+        .filter(
+            CharacterStageAlias.character != None, CharacterStageAlias.name.ilike(name)
+        )
         .first()
     )
-    if not alias:
-        raise ValueError(f'Could not find character matching "{name}"')
-    return alias.character
+    if alias:
+        return alias.character
+    all_aliases = (
+        session.query(CharacterStageAlias)
+        .filter(CharacterStageAlias.character != None)
+        .all()
+    )
+    closest_alias = max(
+        all_aliases,
+        key=lambda alias: SequenceMatcher(
+            lambda x: x in " .", alias.name.lower(), name.lower()
+        ).ratio(),
+    )
+    return closest_alias.character
 
 
 def create_character(*, session, name, position):
