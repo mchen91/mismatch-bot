@@ -59,7 +59,7 @@ class OwnerCommand(commands.Cog):
             video_link=video_link,
         )
         await ctx.send(
-            f"Added {record.character.name}/{record.stage.name} - {time_string} by {player.name} at {video_link}"
+            f"Added {record.character.name}/{record.stage.name} - {time_string} by {player.name} at <{video_link}>"
         )
         session.close()
 
