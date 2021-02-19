@@ -33,13 +33,13 @@ def upgrade():
     zelda_frames = zelda_frames_raw.split("\t")
     zelda_videos = zelda_videos_raw.split("\t")
     zelda_players = zelda_players_raw.split("\t")
-    character = get_character_by_name("Zelda", session)
+    character = get_character_by_name(session=session, name="Zelda")
     for (stage_index, (frame_string, video_link, player_string)) in enumerate(
         zip(zelda_frames, zelda_videos, zelda_players)
     ):
         stage = session.query(Stage).filter(Stage.position == stage_index).one()
         try:
-            player = get_player_by_name(player_string, session)
+            player = get_player_by_name(session=session, name=player_string)
         except ValueError:
             player = None
         if "target" in player_string:

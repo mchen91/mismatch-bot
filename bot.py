@@ -27,12 +27,12 @@ async def wr(ctx, *, char_and_stage):
 
     session = get_session()
     try:
-        character = get_character_by_name(character_name, session)
+        character = get_character_by_name(session=session, name=character_name)
     except ValueError as error:
         await ctx.send(str(error))
         return
     try:
-        stage = get_stage_by_name(stage_name, session)
+        stage = get_stage_by_name(session=session, name=stage_name)
     except ValueError as error:
         await ctx.send(str(error))
         return
@@ -68,7 +68,7 @@ async def char(ctx, character_name):
     from use_cases.records import get_records_by_character
 
     session = get_session()
-    character = get_character_by_name(character_name, session)
+    character = get_character_by_name(session=session, name=character_name)
     records = get_records_by_character(session=session, character=character)
     description_lines = [f"{character.name} Character Records"]
     for record in records:
@@ -108,7 +108,7 @@ async def stage(ctx, stage_name):
     from use_cases.stage import get_stage_by_name
 
     session = get_session()
-    stage = get_stage_by_name(stage_name, session)
+    stage = get_stage_by_name(session=session, name=stage_name)
     records = get_records_by_stage(session=session, stage=stage)
     description_lines = [f"{stage.name} Stage Records"]
     for record in records:
@@ -196,10 +196,10 @@ async def wt(ctx):
     embed = Embed()
     description_lines = []
     for (record, improvement) in zip(records, improvements):
-        record_string = f"([{frames_to_time_string(record.time)}]({record.video_link}) ➛ {frames_to_time_string(improvement)})"
+        record_string = f"[{frames_to_time_string(record.time)}]({record.video_link})➛{frames_to_time_string(improvement)}"
         players_string = ",".join(player.name for player in record.players)
         description_lines.append(
-            f"{record.character.name}/{record.stage.name} {record_string} - {players_string}"
+            f"{record.character.name}/{record.stage.name} ({record_string}) {players_string}"
         )
     description_lines.append(f"Total: {frames_to_time_string(total)}")
     embeds = create_embeds(description_lines)

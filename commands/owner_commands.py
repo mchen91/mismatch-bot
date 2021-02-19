@@ -26,17 +26,17 @@ class OwnerCommand(commands.Cog):
 
         session = get_session()
         try:
-            character = get_character_by_name(character_name, session)
+            character = get_character_by_name(session=session, name=character_name)
         except ValueError as error:
             await ctx.send(str(error))
             return
         try:
-            stage = get_stage_by_name(stage_name, session)
+            stage = get_stage_by_name(session=session, name=stage_name)
         except ValueError as error:
             await ctx.send(str(error))
             return
         try:
-            player = get_player_by_name(player_name, session)
+            player = get_player_by_name(session=session, name=player_name)
         except ValueError as error:
             await ctx.send(str(error))
             return

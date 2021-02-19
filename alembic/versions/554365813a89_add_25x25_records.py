@@ -117,7 +117,7 @@ djwang88	sockdude1	Samplay	Samplay	sockdude1	djwang88	djwang88	djwang88	2 people
         ):
             stage = session.query(Stage).filter(Stage.position == stage_index).one()
             try:
-                player = get_player_by_name(player_string, session)
+                player = get_player_by_name(session=session, name=player_string)
             except ValueError:
                 player = None
             if "target" in player_string:
@@ -208,9 +208,9 @@ YL on Pichu	4.13	megaqwertification
             char_string, stage_string = cur_combo.split(" on ")
         else:
             char_string = stage_string = cur_combo
-        character = get_character_by_name(char_string, session)
-        stage = get_stage_by_name(stage_string, session)
-        player = get_player_by_name(player_string, session)
+        character = get_character_by_name(session=session, name=char_string)
+        stage = get_stage_by_name(session=session, name=stage_string)
+        player = get_player_by_name(session=session, name=player_string)
         record = get_record(session=session, character=character, stage=stage)
         # skipping Seak records for now
         if not record:

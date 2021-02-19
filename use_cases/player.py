@@ -1,7 +1,7 @@
 from models import Player, PlayerAlias
 
 
-def get_player_by_name(name, session):
+def get_player_by_name(*, session, name):
     alias = session.query(PlayerAlias).filter(PlayerAlias.name.ilike(name)).first()
     if not alias:
         raise ValueError(f'Could not find player matching "{name}"')

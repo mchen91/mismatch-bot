@@ -109,7 +109,7 @@ jenkem66"""
     frames = seak_frames_raw.split("\n")
     videos = seak_videos_raw.split("\n")
     players = seak_players_raw.split("\n")
-    seak_stage = get_stage_by_name("Seak", session)
+    seak_stage = get_stage_by_name(session=session, name="Seak")
     for (char_index, (frame_string, video_link, player_string)) in enumerate(
         zip(frames, videos, players)
     ):
@@ -117,7 +117,7 @@ jenkem66"""
             session.query(Character).filter(Character.position == char_index).one()
         )
         try:
-            player = get_player_by_name(player_string, session)
+            player = get_player_by_name(session=session, name=player_string)
         except ValueError:
             player = None
         if "target" in player_string:
@@ -138,11 +138,11 @@ jenkem66"""
         )
     fox_seak_record = get_record(
         session=session,
-        character=get_character_by_name("Fox", session),
+        character=get_character_by_name(session=session, name="Fox"),
         stage=seak_stage,
     )
     for player_string in ["Zampa", "jenkem66"]:
-        player = get_player_by_name(player_string, session)
+        player = get_player_by_name(session=session, name=player_string)
         fox_seak_record.players.append(player)
     session.commit()
 

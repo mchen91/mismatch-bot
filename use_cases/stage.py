@@ -4,14 +4,7 @@ from models import CharacterStageAlias, Stage
 from use_cases.aliases import add_char_stage_alias
 
 
-def get_stage_by_name(name, session):
-    alias = (
-        session.query(CharacterStageAlias)
-        .filter(CharacterStageAlias.stage != None, CharacterStageAlias.name.ilike(name))
-        .first()
-    )
-    if alias:
-        return alias.stage
+def get_stage_by_name(*, session, name):
     all_aliases = (
         session.query(CharacterStageAlias)
         .filter(CharacterStageAlias.stage != None)
