@@ -1,6 +1,8 @@
 alembic
 black
 discord
+flask
+gunicorn
 psycopg2-binary
 scipy
 sqlalchemy
