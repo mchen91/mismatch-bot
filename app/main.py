@@ -20,7 +20,6 @@ def index():
 @app.route("/records/", methods=["GET"])
 def records():
     from models import Character, Record, Stage
-    from use_cases.frame_conversion import frames_to_time_string
 
     all_records = (
         session.query(Record)
@@ -38,4 +37,6 @@ def records():
         for record in all_records
     ]
     chunked_data = _chunks(data, 25)
-    return jsonify(list(chunked_data))
+    response = jsonify(list(chunked_data))
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    return response
