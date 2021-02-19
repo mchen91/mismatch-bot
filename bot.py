@@ -231,6 +231,30 @@ async def bt(ctx):
     session.close()
 
 
+@bot.command(
+    aliases=["bestfm", "besttotalfullmismatch", "bestful"],
+    help="Shows best total with full mismatch (no vanilla char/stage pairings)",
+)
+async def btfm(ctx):
+    from use_cases.embeds import create_embeds
+    from use_cases.frame_conversion import frames_to_time_string
+    from use_cases.total import get_best_total_full_mismatch_records
+
+    session = get_session()
+    records, total = get_best_total_full_mismatch_records(session)
+    description_lines = [
+        f"{record.character.name}/{record.stage.name} - [{frames_to_time_string(record.time)}]({record.video_link}) - {','.join(player.name for player in record.players)}"
+        for record in records
+    ]
+    description_lines.append(f"Total: {frames_to_time_string(total)}")
+    embed = Embed()
+    embed.description = "\n".join(description_lines)
+    embeds = create_embeds(description_lines)
+    for embed in embeds:
+        await ctx.send(embed=embed)
+    session.close()
+
+
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):

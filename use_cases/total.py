@@ -98,3 +98,32 @@ def get_best_total_records(session):
     ]
     total = _calculate_total(assignment, cost_matrix)
     return best_records, total
+
+
+def get_best_total_full_mismatch_records(session):
+    records_main_cast = (
+        session.query(Record)
+        .join(Character)
+        .join(Stage)
+        .filter(Character.position <= 24, Stage.position <= 24)
+        .order_by(Character.position, Stage.position)
+        .all()
+    )
+    records_matrix = list(_chunks(records_main_cast, 25))
+    cost_matrix = [
+        [
+            record.time
+            if record.time is not None
+            and record.character.position != record.stage.position
+            else float("inf")
+            for record in character_records
+        ]
+        for character_records in records_matrix
+    ]
+    assignment = linear_sum_assignment(cost_matrix)
+    best_records = [
+        records_matrix[char_pos][stage_pos]
+        for (char_pos, stage_pos) in zip(*assignment)
+    ]
+    total = _calculate_total(assignment, cost_matrix)
+    return best_records, total
