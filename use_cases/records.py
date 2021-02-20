@@ -66,6 +66,10 @@ def get_record(*, session, character, stage):
     )
 
 
+def get_all_records(*, session):
+    return session.query(Record).all()
+
+
 def get_records_by_character(*, session, character):
     return (
         session.query(Record)

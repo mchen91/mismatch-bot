@@ -1,4 +1,6 @@
 import os
+from collections import defaultdict
+
 from discord import Embed
 from discord.ext import commands
 
@@ -223,8 +225,6 @@ async def bt(ctx):
         for record in records
     ]
     description_lines.append(f"Total: {frames_to_time_string(total)}")
-    embed = Embed()
-    embed.description = "\n".join(description_lines)
     embeds = create_embeds(description_lines)
     for embed in embeds:
         await ctx.send(embed=embed)
@@ -247,8 +247,28 @@ async def btfm(ctx):
         for record in records
     ]
     description_lines.append(f"Total: {frames_to_time_string(total)}")
-    embed = Embed()
-    embed.description = "\n".join(description_lines)
+    embeds = create_embeds(description_lines)
+    for embed in embeds:
+        await ctx.send(embed=embed)
+    session.close()
+
+@bot.command(
+    aliases=["record-count"],
+    help="Shows number of records for each player"
+)
+async def recordcount(ctx):
+    from use_cases.embeds import create_embeds
+    from use_cases.records import get_all_records
+
+    session = get_session()
+    records = get_all_records(session=session)
+    record_count = defaultdict(int)
+    for record in records:
+        for player in record.players:
+            record_count[player.name] += 1
+    description_lines = ["Record Count"]
+    for player_name, count in sorted(record_count.items(), key=lambda tuple: tuple[1], reverse=True):
+        description_lines.append(f"{player_name} - {count}")
     embeds = create_embeds(description_lines)
     for embed in embeds:
         await ctx.send(embed=embed)
