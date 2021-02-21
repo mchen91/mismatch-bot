@@ -1,6 +1,7 @@
 import copy
 
 from scipy.optimize import linear_sum_assignment
+from sqlalchemy.orm import contains_eager
 
 from models import Character, Stage, Record
 
@@ -41,15 +42,23 @@ def _get_lowest_helpful_improvement(
             upper_bound_time = midtime
 
 
-def get_worst_total_records(session):
-    records_main_cast = (
+def _get_main_cast_records(session):
+    return (
         session.query(Record)
-        .join(Character)
-        .join(Stage)
+        .join(Record.character)
+        .join(Record.stage)
+        .join(Record.players, isouter=True)
+        .options(contains_eager(Record.character))
+        .options(contains_eager(Record.stage))
+        .options(contains_eager(Record.players))
         .filter(Character.position <= 24, Stage.position <= 24)
         .order_by(Character.position, Stage.position)
         .all()
     )
+
+
+def get_worst_total_records(session):
+    records_main_cast = _get_main_cast_records(session)
     records_matrix = list(_chunks(records_main_cast, 25))
     inverted_cost_matrix = [
         [
@@ -75,14 +84,7 @@ def get_worst_total_records(session):
 
 
 def get_best_total_records(session):
-    records_main_cast = (
-        session.query(Record)
-        .join(Character)
-        .join(Stage)
-        .filter(Character.position <= 24, Stage.position <= 24)
-        .order_by(Character.position, Stage.position)
-        .all()
-    )
+    records_main_cast = _get_main_cast_records(session)
     records_matrix = list(_chunks(records_main_cast, 25))
     cost_matrix = [
         [
@@ -101,14 +103,7 @@ def get_best_total_records(session):
 
 
 def get_best_total_full_mismatch_records(session):
-    records_main_cast = (
-        session.query(Record)
-        .join(Character)
-        .join(Stage)
-        .filter(Character.position <= 24, Stage.position <= 24)
-        .order_by(Character.position, Stage.position)
-        .all()
-    )
+    records_main_cast = _get_main_cast_records(session)
     records_matrix = list(_chunks(records_main_cast, 25))
     cost_matrix = [
         [
