@@ -1,7 +1,6 @@
 import os
 from collections import defaultdict
 
-from discord import Embed
 from discord.ext import commands
 
 from commands.owner_commands import OwnerCommand
@@ -195,13 +194,11 @@ async def wt(ctx):
 
     session = get_session()
     records, improvements, total = get_worst_total_records(session)
-    embed = Embed()
     description_lines = []
     for (record, improvement) in zip(records, improvements):
-        record_string = f"[{frames_to_time_string(record.time)}]({record.video_link})➛{frames_to_time_string(improvement)}"
-        players_string = ",".join(player.name for player in record.players)
+        record_string = f"[{frames_to_time_string(record.time)}]({record.video_link}) ➛ {frames_to_time_string(improvement)}"
         description_lines.append(
-            f"{record.character.name}/{record.stage.name} ({record_string}) {players_string}"
+            f"{record.character.name}/{record.stage.name} ({record_string})"
         )
     description_lines.append(f"Total: {frames_to_time_string(total)}")
     embeds = create_embeds(description_lines)
@@ -252,10 +249,8 @@ async def btfm(ctx):
         await ctx.send(embed=embed)
     session.close()
 
-@bot.command(
-    aliases=["record-count"],
-    help="Shows number of records for each player"
-)
+
+@bot.command(aliases=["record-count"], help="Shows number of records for each player")
 async def recordcount(ctx):
     from use_cases.embeds import create_embeds
     from use_cases.records import get_all_records
@@ -267,7 +262,9 @@ async def recordcount(ctx):
         for player in record.players:
             record_count[player.name] += 1
     description_lines = ["Record Count"]
-    for player_name, count in sorted(record_count.items(), key=lambda tuple: tuple[1], reverse=True):
+    for player_name, count in sorted(
+        record_count.items(), key=lambda tuple: tuple[1], reverse=True
+    ):
         description_lines.append(f"{player_name} - {count}")
     embeds = create_embeds(description_lines)
     for embed in embeds:

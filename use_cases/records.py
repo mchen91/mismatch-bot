@@ -1,3 +1,5 @@
+from sqlalchemy.orm import contains_eager
+
 from models import Character, Record, Stage
 
 
@@ -67,7 +69,12 @@ def get_record(*, session, character, stage):
 
 
 def get_all_records(*, session):
-    return session.query(Record).all()
+    return (
+        session.query(Record)
+        .join(Record.players)
+        .options(contains_eager(Record.players))
+        .all()
+    )
 
 
 def get_records_by_character(*, session, character):
