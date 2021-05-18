@@ -21,3 +21,8 @@ def create_embeds(lines):
     embed.description = "\n".join(cur_description_lines)
     embeds.append(embed)
     return embeds
+
+async def send_embeds(description_lines, ctx):
+    embeds = create_embeds(description_lines)
+    for embed in embeds:
+        await ctx.send(embed=embed)
