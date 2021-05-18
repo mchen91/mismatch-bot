@@ -21,7 +21,7 @@ async def wr(ctx, *, char_and_stage):
     combo_array = char_and_stage.split("/")
     if len(combo_array) != 2:
         await ctx.send(
-            f"syntax: {COMMAND_PREFIX}<char>/<stage>. e.g. `-mm young link/samus`"
+            f"syntax: {COMMAND_PREFIX}<char>/<stage>. e.g. `-mm wr young link/samus`"
         )
         return
     character_name, stage_name = [s.strip() for s in combo_array]
@@ -64,7 +64,7 @@ async def wr(ctx, *, char_and_stage):
 )
 async def char(ctx, character_name):
     from use_cases.character import get_character_by_name
-    from use_cases.embeds import create_embeds
+    from use_cases.embeds import send_embeds
     from use_cases.frame_conversion import frames_to_time_string
     from use_cases.records import get_records_by_character
 
@@ -93,9 +93,7 @@ async def char(ctx, character_name):
         for record in records
     )
     description_lines.append(f"25 Stage Total: {frames_to_time_string(total_frames)}")
-    embeds = create_embeds(description_lines)
-    for embed in embeds:
-        await ctx.send(embed=embed)
+    await send_embeds(description_lines, ctx)
     session.close()
 
 
@@ -103,7 +101,7 @@ async def char(ctx, character_name):
     help=f"Shows records for a given stage, e.g. {COMMAND_PREFIX}stage mario",
 )
 async def stage(ctx, stage_name):
-    from use_cases.embeds import create_embeds
+    from use_cases.embeds import send_embeds
     from use_cases.frame_conversion import frames_to_time_string
     from use_cases.records import get_records_by_stage
     from use_cases.stage import get_stage_by_name
@@ -137,9 +135,7 @@ async def stage(ctx, stage_name):
     description_lines.append(
         f"25 Character Total: {frames_to_time_string(total_frames)}"
     )
-    embeds = create_embeds(description_lines)
-    for embed in embeds:
-        await ctx.send(embed=embed)
+    await send_embeds(description_lines, ctx)
     session.close()
 
 
@@ -148,7 +144,7 @@ async def stage(ctx, stage_name):
     help="Shows fastest records for each stage",
 )
 async def stagerecords(ctx):
-    from use_cases.embeds import create_embeds
+    from use_cases.embeds import send_embeds
     from use_cases.frame_conversion import frames_to_time_string
     from use_cases.records import get_fastest_stage_records
 
@@ -178,9 +174,7 @@ async def stagerecords(ctx):
         for record in records
     )
     description_lines.append(f"25 Stage Total: {frames_to_time_string(total_frames)}")
-    embeds = create_embeds(description_lines)
-    for embed in embeds:
-        await ctx.send(embed=embed)
+    await send_embeds(description_lines, ctx)
     session.close()
 
 
@@ -188,7 +182,7 @@ async def stagerecords(ctx):
     aliases=["worst", "worsttotal", "worst-total"], help="Shows worst mismatch total"
 )
 async def wt(ctx):
-    from use_cases.embeds import create_embeds
+    from use_cases.embeds import send_embeds
     from use_cases.frame_conversion import frames_to_time_string
     from use_cases.total import get_worst_total_records
 
@@ -201,9 +195,7 @@ async def wt(ctx):
             f"{record.character.name}/{record.stage.name} ({record_string})"
         )
     description_lines.append(f"Total: {frames_to_time_string(total)}")
-    embeds = create_embeds(description_lines)
-    for embed in embeds:
-        await ctx.send(embed=embed)
+    await send_embeds(description_lines, ctx)
     session.close()
 
 
@@ -211,7 +203,7 @@ async def wt(ctx):
     aliases=["best", "besttotal", "best-total"], help="Shows best mismatch total"
 )
 async def bt(ctx):
-    from use_cases.embeds import create_embeds
+    from use_cases.embeds import send_embeds
     from use_cases.frame_conversion import frames_to_time_string
     from use_cases.total import get_best_total_records
 
@@ -222,9 +214,9 @@ async def bt(ctx):
         for record in records
     ]
     description_lines.append(f"Total: {frames_to_time_string(total)}")
-    embeds = create_embeds(description_lines)
-    for embed in embeds:
-        await ctx.send(embed=embed)
+    await send_embeds(description_lines, ctx)
+    session.close()
+
     session.close()
 
 
@@ -233,7 +225,7 @@ async def bt(ctx):
     help="Shows best total with full mismatch (no vanilla char/stage pairings)",
 )
 async def btfm(ctx):
-    from use_cases.embeds import create_embeds
+    from use_cases.embeds import send_embeds
     from use_cases.frame_conversion import frames_to_time_string
     from use_cases.total import get_best_total_full_mismatch_records
 
@@ -244,15 +236,13 @@ async def btfm(ctx):
         for record in records
     ]
     description_lines.append(f"Total: {frames_to_time_string(total)}")
-    embeds = create_embeds(description_lines)
-    for embed in embeds:
-        await ctx.send(embed=embed)
+    await send_embeds(description_lines, ctx)
     session.close()
 
 
 @bot.command(aliases=["record-count"], help="Shows number of records for each player")
 async def recordcount(ctx):
-    from use_cases.embeds import create_embeds
+    from use_cases.embeds import send_embeds
     from use_cases.records import get_all_records
 
     session = get_session()
@@ -266,9 +256,8 @@ async def recordcount(ctx):
         record_count.items(), key=lambda tuple: tuple[1], reverse=True
     ):
         description_lines.append(f"{player_name} - {count}")
-    embeds = create_embeds(description_lines)
-    for embed in embeds:
-        await ctx.send(embed=embed)
+    await send_embeds(description_lines, ctx)
+    session.close()
     session.close()
 
 
