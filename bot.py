@@ -264,15 +264,20 @@ async def recordcount(ctx):
 
 ### TEMP TEMP TEMP
 @bot.command(aliases=["inspireme"], help="Generates a TTRC3 claim")
-async def claim(ctx):
-    from use_cases.character import get_character_by_position
+async def claim(ctx, char_name=None):
+    from use_cases.character import get_character_by_position, get_character_by_name
 
     session = get_session()
     claims = [7, 9, 8, 10, 7, 10, 10, 10, 6, 7, 3.7, 15, 12, 11, 7, 5, 7, 8, 7, 7, 11, 7, 6, 5, 3]
-    random_character_position = random.randint(0, 24)
-    character = get_character_by_position(session=session, position=random_character_position)
+    if char_name:
+        character = get_character_by_name(session=session, name=char_name)
+        claim = claims[character.position]
+    else:
+        random_character_position = random.randint(0, 24)
+        character = get_character_by_position(session=session, position=random_character_position)
+        claim = claims[random_character_position]
     random_sub_amount = random.choice([0.5, 1, 1.5, 2, 2.5, 3])
-    claimed_sub = claims[random_character_position] - random_sub_amount
+    claimed_sub = claim - random_sub_amount
 
     await ctx.send(f"Sub {claimed_sub} {character.name}")
     session.close()
