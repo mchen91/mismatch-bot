@@ -30,3 +30,7 @@ def create_character(*, session, name, position):
     )
     session.commit()
     return new_character
+
+
+def get_character_by_position(*, session, position):
+    return session.query(Character).filter(Character.position == position).first()
