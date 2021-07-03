@@ -1,10 +1,9 @@
 alembic==1.6.5
 black==21.6b0
-discord==1.7.3
 discord.py==1.7.3
 Flask==1.1.2
 Flask-Cors==3.0.10
-gunicorn==20.0.4
-psycopg2-binary==2.9.1
+# gunicorn==20.0.4
+# psycopg2-binary==2.9.1
 scipy==1.7.0
 SQLAlchemy<1.4.0
