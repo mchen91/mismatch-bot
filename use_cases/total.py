@@ -1,10 +1,11 @@
 import copy
 
-from scipy.optimize import linear_sum_assignment
+from munkres import Munkres
 from sqlalchemy.orm import contains_eager
 
 from models import Character, Stage, Record
 
+m = Munkres()
 
 def _chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
@@ -14,7 +15,7 @@ def _chunks(lst, n):
 
 def _calculate_total(assignment, cost_matrix):
     return sum(
-        cost_matrix[char_pos][stage_pos] for (char_pos, stage_pos) in zip(*assignment)
+        cost_matrix[char_pos][stage_pos] for (char_pos, stage_pos) in assignment
     )
 
 
@@ -27,11 +28,11 @@ def _get_lowest_helpful_improvement(
 
     matrix_copy = copy.deepcopy(inverted_cost_matrix)
     matrix_copy[char_pos][stage_pos] = 0
-    best_total = _calculate_total(linear_sum_assignment(matrix_copy), matrix_copy)
+    best_total = _calculate_total(m.compute(matrix_copy), matrix_copy)
     while True:
         midtime = (upper_bound_time + lower_bound_time) // 2
         matrix_copy[char_pos][stage_pos] = midtime
-        cur_total = _calculate_total(linear_sum_assignment(matrix_copy), matrix_copy)
+        cur_total = _calculate_total(m.compute(matrix_copy), matrix_copy)
         if cur_total < best_total:
             if midtime == lower_bound_time:
                 return -upper_bound_time
@@ -67,17 +68,17 @@ def get_worst_total_records(session):
         ]
         for character_records in records_matrix
     ]
-    assignment = linear_sum_assignment(inverted_cost_matrix)
+    assignment = m.compute(inverted_cost_matrix)
     worst_records = [
         records_matrix[char_pos][stage_pos]
-        for (char_pos, stage_pos) in zip(*assignment)
+        for (char_pos, stage_pos) in assignment
     ]
     inverted_total = _calculate_total(assignment, inverted_cost_matrix)
     lowest_helpful_improvements = [
         _get_lowest_helpful_improvement(
             inverted_total, inverted_cost_matrix, char_pos, stage_pos
         )
-        for char_pos, stage_pos in zip(*assignment)
+        for char_pos, stage_pos in assignment
     ]
 
     return worst_records, lowest_helpful_improvements, -inverted_total
@@ -93,10 +94,10 @@ def get_best_total_records(session):
         ]
         for character_records in records_matrix
     ]
-    assignment = linear_sum_assignment(cost_matrix)
+    assignment = m.compute(cost_matrix)
     best_records = [
         records_matrix[char_pos][stage_pos]
-        for (char_pos, stage_pos) in zip(*assignment)
+        for (char_pos, stage_pos) in assignment
     ]
     total = _calculate_total(assignment, cost_matrix)
     return best_records, total
@@ -115,10 +116,10 @@ def get_best_total_full_mismatch_records(session):
         ]
         for character_records in records_matrix
     ]
-    assignment = linear_sum_assignment(cost_matrix)
+    assignment = m.compute(cost_matrix)
     best_records = [
         records_matrix[char_pos][stage_pos]
-        for (char_pos, stage_pos) in zip(*assignment)
+        for (char_pos, stage_pos) in assignment
     ]
     total = _calculate_total(assignment, cost_matrix)
     return best_records, total
