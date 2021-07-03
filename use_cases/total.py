@@ -7,6 +7,7 @@ from models import Character, Stage, Record
 
 m = Munkres()
 
+
 def _chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
@@ -14,9 +15,7 @@ def _chunks(lst, n):
 
 
 def _calculate_total(assignment, cost_matrix):
-    return sum(
-        cost_matrix[char_pos][stage_pos] for (char_pos, stage_pos) in assignment
-    )
+    return sum(cost_matrix[char_pos][stage_pos] for (char_pos, stage_pos) in assignment)
 
 
 def _get_lowest_helpful_improvement(
@@ -70,8 +69,7 @@ def get_worst_total_records(session):
     ]
     assignment = m.compute(inverted_cost_matrix)
     worst_records = [
-        records_matrix[char_pos][stage_pos]
-        for (char_pos, stage_pos) in assignment
+        records_matrix[char_pos][stage_pos] for (char_pos, stage_pos) in assignment
     ]
     inverted_total = _calculate_total(assignment, inverted_cost_matrix)
     lowest_helpful_improvements = [
@@ -96,8 +94,7 @@ def get_best_total_records(session):
     ]
     assignment = m.compute(cost_matrix)
     best_records = [
-        records_matrix[char_pos][stage_pos]
-        for (char_pos, stage_pos) in assignment
+        records_matrix[char_pos][stage_pos] for (char_pos, stage_pos) in assignment
     ]
     total = _calculate_total(assignment, cost_matrix)
     return best_records, total
@@ -118,8 +115,7 @@ def get_best_total_full_mismatch_records(session):
     ]
     assignment = m.compute(cost_matrix)
     best_records = [
-        records_matrix[char_pos][stage_pos]
-        for (char_pos, stage_pos) in assignment
+        records_matrix[char_pos][stage_pos] for (char_pos, stage_pos) in assignment
     ]
     total = _calculate_total(assignment, cost_matrix)
     return best_records, total
