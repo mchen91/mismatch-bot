@@ -4,6 +4,6 @@ discord.py
 Flask
 Flask-Cors
 gunicorn
-munkres
 psycopg2
+scipy
 SQLAlchemy<1.4.0
