@@ -1,3 +1,4 @@
+from use_cases.records import RecordNotBetterException
 from discord.ext import commands
 
 from db import get_session
@@ -49,18 +50,22 @@ class OwnerCommand(commands.Cog):
             time = time_string_to_frames(time_string)
             partial_targets = None
 
-        record = add_record(
-            session=session,
-            character=character,
-            stage=stage,
-            player=player,
-            time=time,
-            partial_targets=partial_targets,
-            video_link=video_link,
-        )
-        await ctx.send(
-            f"Added {record.character.name}/{record.stage.name} - {time_string} by {player.name} at <{video_link}>"
-        )
+        try:
+            record = add_record(
+                session=session,
+                character=character,
+                stage=stage,
+                player=player,
+                time=time,
+                partial_targets=partial_targets,
+                video_link=video_link,
+            )
+        except RecordNotBetterException:
+            await ctx.send("Did not add; worse than existing record")
+        else:
+            await ctx.send(
+                f"Added {record.character.name}/{record.stage.name} - {time_string} by {player.name} at <{video_link}>"
+            )
         session.close()
 
     @commands.command()

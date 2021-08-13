@@ -2,6 +2,9 @@ from sqlalchemy.orm import contains_eager
 
 from models import Character, Record, Stage
 
+class RecordNotBetterException(ValueError):
+    pass
+
 
 def add_record(
     *,
@@ -42,6 +45,8 @@ def add_record(
                 record.time = time
                 record.video_link = video_link
                 record.players = [player]
+            else:
+                raise RecordNotBetterException
     else:
         record = Record(
             character=character,
