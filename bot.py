@@ -90,6 +90,19 @@ async def char(ctx, character_name):
             else "Anonymous"
         )
         description_lines.append(f"{record.stage.name} - {record_string} - {players}")
+    frames_23_stages = sum(
+        0
+        if (
+            record.time is None
+            or record.stage.position in [17, 20]
+            or record.stage.position > 24
+        )
+        else record.time
+        for record in records
+    )
+    description_lines.append(
+        f"23 Stage Total: {frames_to_time_string(frames_23_stages)}"
+    )
     total_frames = sum(
         0 if (record.time is None or record.stage.position > 24) else record.time
         for record in records

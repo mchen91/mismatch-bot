@@ -2,6 +2,7 @@ from sqlalchemy.orm import contains_eager
 
 from models import Character, Record, Stage
 
+
 class RecordNotBetterException(ValueError):
     pass
 
