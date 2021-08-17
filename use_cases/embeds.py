@@ -1,10 +1,12 @@
+from typing import List
 from discord import Embed
+from discord.ext.commands.context import Context
 
 MAX_DESCRIPTION_LENGTH = 2048
 
 
-def create_embeds(lines):
-    embeds = []
+def create_embeds(lines: List[str]):
+    embeds: List[Embed] = []
     embed = Embed()
     cur_description_lines = []
     cur_description_length = 0
@@ -23,7 +25,7 @@ def create_embeds(lines):
     return embeds
 
 
-async def send_embeds(description_lines, ctx):
+async def send_embeds(description_lines: List[str], ctx: Context):
     embeds = create_embeds(description_lines)
     for embed in embeds:
         await ctx.send(embed=embed)

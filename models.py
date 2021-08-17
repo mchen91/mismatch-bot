@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 from sqlalchemy import Column, Integer, ForeignKey, String, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -52,12 +53,12 @@ class Record(Base):
     id = Column(Integer, primary_key=True)
 
     character_id = Column(Integer, ForeignKey("character.id"))
-    character = relationship("Character", backref="records")
+    character: Character = relationship("Character", backref="records")
 
     stage_id = Column(Integer, ForeignKey("stage.id"))
-    stage = relationship("Stage", backref="records")
+    stage: Stage = relationship("Stage", backref="records")
 
-    players = relationship(
+    players: List[Player] = relationship(
         "Player", secondary=_player_record_association_table, backref="records"
     )
 
@@ -80,10 +81,10 @@ class CharacterStageAlias(Base):
 
     name = Column(String, index=True, unique=True)
     character_id = Column(Integer, ForeignKey("character.id"))
-    character = relationship("Character", backref="aliases")
+    character: Character = relationship("Character", backref="aliases")
 
     stage_id = Column(Integer, ForeignKey("stage.id"))
-    stage = relationship("Stage", backref="aliases")
+    stage: Stage = relationship("Stage", backref="aliases")
 
 
 class PlayerAlias(Base):
@@ -92,4 +93,4 @@ class PlayerAlias(Base):
 
     name = Column(String, index=True, unique=True)
     player_id = Column(Integer, ForeignKey("player.id"))
-    player = relationship("Player", backref="aliases")
+    player: Player = relationship("Player", backref="aliases")

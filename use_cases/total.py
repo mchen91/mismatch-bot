@@ -1,25 +1,33 @@
 import copy
+from typing import List, Tuple, TypeVar
 
 from scipy.optimize import linear_sum_assignment
 from sqlalchemy.orm import contains_eager
+from sqlalchemy.orm.session import Session
 
 from models import Character, Stage, Record
 
+T = TypeVar("T")
+Assignment = Tuple[List[int], List[int]]
 
-def _chunks(lst, n):
+
+def _chunks(lst: List[T], n: int):
     """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
         yield lst[i : i + n]
 
 
-def _calculate_total(assignment, cost_matrix):
+def _calculate_total(assignment: Assignment, cost_matrix: List[List[float]]):
     return sum(
         cost_matrix[char_pos][stage_pos] for (char_pos, stage_pos) in zip(*assignment)
     )
 
 
 def _get_lowest_helpful_improvement(
-    inverted_total, inverted_cost_matrix, char_pos, stage_pos
+    inverted_total: float,
+    inverted_cost_matrix: List[List[float]],
+    char_pos: int,
+    stage_pos: int,
 ):
     cur_total = inverted_total
     upper_bound_time = 0
@@ -42,7 +50,7 @@ def _get_lowest_helpful_improvement(
             upper_bound_time = midtime
 
 
-def _get_main_cast_records(session):
+def _get_main_cast_records(session: Session) -> List[Record]:
     return (
         session.query(Record)
         .join(Record.character)
@@ -57,7 +65,7 @@ def _get_main_cast_records(session):
     )
 
 
-def get_worst_total_records(session):
+def get_worst_total_records(session: Session):
     records_main_cast = _get_main_cast_records(session)
     records_matrix = list(_chunks(records_main_cast, 25))
     inverted_cost_matrix = [
@@ -67,7 +75,9 @@ def get_worst_total_records(session):
         ]
         for character_records in records_matrix
     ]
-    assignment = linear_sum_assignment(inverted_cost_matrix)
+    assignment: Assignment = linear_sum_assignment(
+        inverted_cost_matrix
+    )
     worst_records = [
         records_matrix[char_pos][stage_pos]
         for (char_pos, stage_pos) in zip(*assignment)
@@ -83,7 +93,7 @@ def get_worst_total_records(session):
     return worst_records, lowest_helpful_improvements, -inverted_total
 
 
-def get_best_total_records(session):
+def get_best_total_records(session: Session):
     records_main_cast = _get_main_cast_records(session)
     records_matrix = list(_chunks(records_main_cast, 25))
     cost_matrix = [
@@ -93,7 +103,7 @@ def get_best_total_records(session):
         ]
         for character_records in records_matrix
     ]
-    assignment = linear_sum_assignment(cost_matrix)
+    assignment: Assignment = linear_sum_assignment(cost_matrix)
     best_records = [
         records_matrix[char_pos][stage_pos]
         for (char_pos, stage_pos) in zip(*assignment)
@@ -102,7 +112,7 @@ def get_best_total_records(session):
     return best_records, total
 
 
-def get_best_total_full_mismatch_records(session):
+def get_best_total_full_mismatch_records(session: Session):
     records_main_cast = _get_main_cast_records(session)
     records_matrix = list(_chunks(records_main_cast, 25))
     cost_matrix = [
@@ -115,7 +125,7 @@ def get_best_total_full_mismatch_records(session):
         ]
         for character_records in records_matrix
     ]
-    assignment = linear_sum_assignment(cost_matrix)
+    assignment: Assignment = linear_sum_assignment(cost_matrix)
     best_records = [
         records_matrix[char_pos][stage_pos]
         for (char_pos, stage_pos) in zip(*assignment)

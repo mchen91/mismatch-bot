@@ -1,14 +1,16 @@
+from sqlalchemy.orm.session import Session
+
 from models import Player, PlayerAlias
 
 
-def get_player_by_name(*, session, name):
+def get_player_by_name(*, session: Session, name: str):
     alias = session.query(PlayerAlias).filter(PlayerAlias.name.ilike(name)).first()
     if not alias:
         raise ValueError(f'Could not find player matching "{name}"')
     return alias.player
 
 
-def create_player(*, session, name):
+def create_player(*, session: Session, name: str):
     from use_cases.aliases import add_player_alias
 
     existing_player = session.query(Player).filter(Player.name == name).first()

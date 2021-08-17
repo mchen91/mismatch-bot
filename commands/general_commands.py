@@ -3,14 +3,17 @@ from collections import defaultdict
 from decimal import Decimal
 
 from discord.ext import commands
+from discord.ext.commands.context import Context
 
 from db import get_session
 from commands.constants import COMMAND_PREFIX
 
 
 class GeneralCommand(commands.Cog):
-    @commands.command(help=f"Shows current record, e.g. {COMMAND_PREFIX}young link/samus")
-    async def wr(self, ctx, char_and_stage):
+    @commands.command(
+        help=f"Shows current record, e.g. {COMMAND_PREFIX}wr young link/samus"
+    )
+    async def wr(self, ctx: Context, char_and_stage: str):
         from use_cases.character import get_character_by_name
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.records import get_record
@@ -19,7 +22,7 @@ class GeneralCommand(commands.Cog):
         combo_array = char_and_stage.split("/")
         if len(combo_array) != 2:
             await ctx.send(
-                f"syntax: {COMMAND_PREFIX}<char>/<stage>. e.g. `-mm wr young link/samus`"
+                f"syntax: {COMMAND_PREFIX}<char>/<stage>. e.g. `{COMMAND_PREFIX}wr young link/samus`"
             )
             return
         character_name, stage_name = [s.strip() for s in combo_array]
@@ -55,16 +58,19 @@ class GeneralCommand(commands.Cog):
         await ctx.send(msg)
         session.close()
 
-
     @commands.command(
         aliases=["character"],
         help=f"Shows records for a given character, e.g. {COMMAND_PREFIX}char yoshi",
     )
-    async def char(self, ctx, character_name):
+    async def char(self, ctx: Context, character_name: str):
         from use_cases.character import get_character_by_name
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
-        from use_cases.records import get_records_by_character
+        from use_cases.records import (
+            get_23_stage_total,
+            get_25_stage_total,
+            get_records_by_character,
+        )
 
         session = get_session()
         character = get_character_by_name(session=session, name=character_name)
@@ -85,36 +91,27 @@ class GeneralCommand(commands.Cog):
                 if record.players
                 else "Anonymous"
             )
-            description_lines.append(f"{record.stage.name} - {record_string} - {players}")
-        frames_23_stages = sum(
-            0
-            if (
-                record.time is None
-                or record.stage.position in [17, 20]
-                or record.stage.position > 24
+            description_lines.append(
+                f"{record.stage.name} - {record_string} - {players}"
             )
-            else record.time
-            for record in records
-        )
+        frames_23_stages = get_23_stage_total(records=records)
         description_lines.append(
             f"23 Stage Total: {frames_to_time_string(frames_23_stages)}"
         )
-        total_frames = sum(
-            0 if (record.time is None or record.stage.position > 24) else record.time
-            for record in records
+        total_frames = get_25_stage_total(records=records)
+        description_lines.append(
+            f"25 Stage Total: {frames_to_time_string(total_frames)}"
         )
-        description_lines.append(f"25 Stage Total: {frames_to_time_string(total_frames)}")
         await send_embeds(description_lines, ctx)
         session.close()
-
 
     @commands.command(
         help=f"Shows records for a given stage, e.g. {COMMAND_PREFIX}stage mario",
     )
-    async def stage(self, ctx, stage_name):
+    async def stage(self, ctx: Context, stage_name: str):
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
-        from use_cases.records import get_records_by_stage
+        from use_cases.records import get_25_stage_total, get_records_by_stage
         from use_cases.stage import get_stage_by_name
 
         session = get_session()
@@ -139,37 +136,31 @@ class GeneralCommand(commands.Cog):
             description_lines.append(
                 f"{record.character.name} - {record_string} - {players}"
             )
-        total_frames = sum(
-            0 if (record.time is None or record.character.position > 24) else record.time
-            for record in records
-        )
+        total_frames = get_25_stage_total(records=records)
         description_lines.append(
             f"25 Character Total: {frames_to_time_string(total_frames)}"
         )
         await send_embeds(description_lines, ctx)
         session.close()
 
-
     @commands.command(
         aliases=["stage-records"],
         help="Shows fastest records for each stage",
     )
-    async def stagerecords(self, ctx):
+    async def stagerecords(self, ctx: Context):
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
-        from use_cases.records import get_fastest_stage_records
+        from use_cases.records import (
+            get_25_stage_total,
+            get_fastest_stage_records,
+            get_formatted_record_string,
+        )
 
         session = get_session()
         records = get_fastest_stage_records(session=session)
         description_lines = [f"Fastest Stage Records"]
         for record in records:
-            record_string = (
-                f"{record.partial_targets} target"
-                if record.partial_targets == 1
-                else f"{record.partial_targets} targets"
-                if record.time is None
-                else frames_to_time_string(record.time)
-            )
+            record_string = get_formatted_record_string(record=record)
             if record.video_link:
                 record_string = f"[{record_string}]({record.video_link})"
             players = (
@@ -180,17 +171,16 @@ class GeneralCommand(commands.Cog):
             description_lines.append(
                 f"{record.character.name}/{record.stage.name} - {record_string} - {players}"
             )
-        total_frames = sum(
-            0 if (record.time is None or record.stage.position > 24) else record.time
-            for record in records
+        total_frames = get_25_stage_total(records=records)
+        description_lines.append(
+            f"25 Stage Total: {frames_to_time_string(total_frames)}"
         )
-        description_lines.append(f"25 Stage Total: {frames_to_time_string(total_frames)}")
         await send_embeds(description_lines, ctx)
         session.close()
 
-
     @commands.command(
-        aliases=["worst", "worsttotal", "worst-total"], help="Shows worst mismatch total"
+        aliases=["worst", "worsttotal", "worst-total"],
+        help="Shows worst mismatch total",
     )
     async def wt(self, ctx):
         from use_cases.embeds import send_embeds
@@ -209,7 +199,6 @@ class GeneralCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-
     @commands.command(
         aliases=["best", "besttotal", "best-total"], help="Shows best mismatch total"
     )
@@ -227,9 +216,6 @@ class GeneralCommand(commands.Cog):
         description_lines.append(f"Total: {frames_to_time_string(total)}")
         await send_embeds(description_lines, ctx)
         session.close()
-
-        session.close()
-
 
     @commands.command(
         aliases=["bestfm", "besttotalfullmismatch", "bestful"],
@@ -250,8 +236,9 @@ class GeneralCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-
-    @commands.command(aliases=["record-count"], help="Shows number of records for each player")
+    @commands.command(
+        aliases=["record-count"], help="Shows number of records for each player"
+    )
     async def recordcount(self, ctx):
         from use_cases.embeds import send_embeds
         from use_cases.records import get_all_records
@@ -269,8 +256,66 @@ class GeneralCommand(commands.Cog):
             description_lines.append(f"{player_name} - {count}")
         await send_embeds(description_lines, ctx)
         session.close()
-        session.close()
 
+    @commands.command(help="Compare times between two characters")
+    async def compare(self, ctx, *char_names):
+        from use_cases.character import get_character_by_name
+        from use_cases.embeds import send_embeds
+        from use_cases.frame_conversion import frames_to_time_string
+        from use_cases.records import (
+            get_23_stage_total,
+            get_25_stage_total,
+            get_formatted_record_string,
+            get_records_by_character,
+        )
+
+        session = get_session()
+        characters = [
+            get_character_by_name(session=session, name=char_name)
+            for char_name in char_names
+        ]
+        records_MULTI = [
+            get_records_by_character(session=session, character=character)
+            for character in characters
+        ]
+        title = " vs. ".join(character.name for character in characters)
+        description_lines = [title]
+        for records in zip(*records_MULTI):
+            record_string_MULTI = [
+                get_formatted_record_string(record=record) for record in records
+            ]
+            # if record.video_link:
+            #     record_string = f"[{record_string}]({record.video_link})"
+            # players = (
+            #     ",".join(player.name for player in record.players)
+            #     if record.players
+            #     else "Anonymous"
+            # )
+            joined_record_string = "/".join(record_string_MULTI)
+            description_lines.append(
+                f"{records[0].stage.name} - {joined_record_string}"
+            )
+        frames_23_stages_MULTI = [
+            get_23_stage_total(records=records) for records in records_MULTI
+        ]
+        print(frames_23_stages_MULTI)
+        time_strings_23_stages_MULTI = [
+            frames_to_time_string(frames) for frames in frames_23_stages_MULTI
+        ]
+        description_lines.append(
+            f"23 Stage Total: {'/'.join(time_strings_23_stages_MULTI)}"
+        )
+        frames_25_stages_MULTI = [
+            get_25_stage_total(records=records) for records in records_MULTI
+        ]
+        time_strings_25_stages_MULTI = [
+            frames_to_time_string(frames) for frames in frames_25_stages_MULTI
+        ]
+        description_lines.append(
+            f"25 Stage Total: {'/'.join(time_strings_25_stages_MULTI)}"
+        )
+        await send_embeds(description_lines, ctx)
+        session.close()
 
     ### TEMP TEMP TEMP
     @commands.command(aliases=["inspireme"], help="Generates a TTRC3 claim")

@@ -1,8 +1,15 @@
+from sqlalchemy.orm.session import Session
+
 from models import Character, CharacterStageAlias, Player, PlayerAlias, Stage
 
 
 def add_char_stage_alias(
-    *, session, aliased_name, known_name, char_only=False, stage_only=False
+    *,
+    session: Session,
+    aliased_name: str,
+    known_name: str,
+    char_only: bool = False,
+    stage_only: bool = False,
 ):
     existing_alias = (
         session.query(CharacterStageAlias)
@@ -32,7 +39,7 @@ def add_char_stage_alias(
     return alias
 
 
-def add_player_alias(*, session, aliased_name, known_name):
+def add_player_alias(*, session: Session, aliased_name: str, known_name: str):
     if session.query(PlayerAlias).filter(PlayerAlias.name.ilike(aliased_name)).first():
         raise ValueError(f"Already aliased {aliased_name}")
     player = session.query(Player).filter(Player.name.ilike(known_name)).first()

@@ -9,6 +9,7 @@ from commands.owner_commands import OwnerCommand
 
 bot = commands.Bot(command_prefix=COMMAND_PREFIX)
 
+
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):

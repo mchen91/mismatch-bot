@@ -4,7 +4,7 @@ import re
 READABLE_TIME_FORMAT = r"^(?:(\d\d?):)?(\d\d?\.\d\d?)$"
 
 
-def time_string_to_frames(time_string):
+def time_string_to_frames(time_string: str):
     time_match = re.fullmatch(READABLE_TIME_FORMAT, time_string)
     if not time_match:
         raise ValueError(f"bad time string {time_string}")
@@ -14,7 +14,7 @@ def time_string_to_frames(time_string):
     return round(time * 60)
 
 
-def frames_to_time_string(frames):
+def frames_to_time_string(frames: int):
     minutes = frames // 3600
     seconds = (frames // 60) % 60
     centiseconds = ((frames % 60) * 99) // 59

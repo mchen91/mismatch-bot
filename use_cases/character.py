@@ -1,10 +1,11 @@
 from difflib import SequenceMatcher
+from sqlalchemy.orm.session import Session
 
 from models import Character, CharacterStageAlias
 from use_cases.aliases import add_char_stage_alias
 
 
-def get_character_by_name(*, session, name):
+def get_character_by_name(*, session: Session, name: str):
     all_aliases = (
         session.query(CharacterStageAlias)
         .filter(CharacterStageAlias.character != None)
@@ -19,7 +20,7 @@ def get_character_by_name(*, session, name):
     return closest_alias.character
 
 
-def create_character(*, session, name, position):
+def create_character(*, session: Session, name: str, position: int):
     existing_character = session.query(Character).filter(Character.name == name).first()
     if existing_character:
         raise ValueError(f'Character "{existing_character.name}" already exists')
@@ -32,5 +33,5 @@ def create_character(*, session, name, position):
     return new_character
 
 
-def get_character_by_position(*, session, position):
+def get_character_by_position(*, session: Session, position: int):
     return session.query(Character).filter(Character.position == position).first()

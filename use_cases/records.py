@@ -1,6 +1,8 @@
+from typing import List
 from sqlalchemy.orm import contains_eager
+from sqlalchemy.orm.session import Session
 
-from models import Character, Record, Stage
+from models import Character, Player, Record, Stage
 
 
 class RecordNotBetterException(ValueError):
@@ -9,13 +11,13 @@ class RecordNotBetterException(ValueError):
 
 def add_record(
     *,
-    session,
-    character,
-    stage,
-    player=None,
-    time=None,
-    partial_targets=None,
-    video_link=None
+    session: Session,
+    character: Character,
+    stage: Stage,
+    player: Player = None,
+    time: int = None,
+    partial_targets: int = None,
+    video_link: str = None,
 ):
     prev_records = session.query(Record).filter(
         Record.character == character,
@@ -63,7 +65,7 @@ def add_record(
     return record
 
 
-def get_record(*, session, character, stage):
+def get_record(*, session: Session, character: Character, stage: Stage):
     return (
         session.query(Record)
         .filter(
@@ -74,7 +76,7 @@ def get_record(*, session, character, stage):
     )
 
 
-def get_all_records(*, session):
+def get_all_records(*, session: Session) -> List[Record]:
     return (
         session.query(Record)
         .join(Record.players)
@@ -83,7 +85,7 @@ def get_all_records(*, session):
     )
 
 
-def get_records_by_character(*, session, character):
+def get_records_by_character(*, session: Session, character: Character) -> List[Record]:
     return (
         session.query(Record)
         .join(Stage)
@@ -92,7 +94,7 @@ def get_records_by_character(*, session, character):
     )
 
 
-def get_records_by_stage(*, session, stage):
+def get_records_by_stage(*, session: Session, stage: Stage) -> List[Record]:
     return (
         session.query(Record)
         .join(Character)
@@ -101,9 +103,9 @@ def get_records_by_stage(*, session, stage):
     )
 
 
-def get_fastest_stage_records(*, session):
+def get_fastest_stage_records(*, session: Session):
     # TODO: optimize num queries?
-    records = []
+    records: List[Record] = []
     for stage in session.query(Stage).order_by(Stage.position):
         stage_records = session.query(Record).filter(Record.stage == stage)
         fastest_record = min(
@@ -112,3 +114,35 @@ def get_fastest_stage_records(*, session):
         )
         records.append(fastest_record)
     return records
+
+
+def get_formatted_record_string(*, record: Record):
+    from use_cases.frame_conversion import frames_to_time_string
+
+    return (
+        f"{record.partial_targets} target"
+        if record.partial_targets == 1
+        else f"{record.partial_targets} targets"
+        if record.time is None
+        else frames_to_time_string(record.time)
+    )
+
+
+def get_23_stage_total(*, records: List[Record]):
+    return sum(
+        record.time
+        for record in records
+        if (
+            record.time is not None
+            and record.stage.position not in [17, 20]
+            and 0 <= record.stage.position <= 24
+        )
+    )
+
+
+def get_25_stage_total(*, records: List[Record]):
+    return sum(
+        record.time
+        for record in records
+        if record.time is not None and 0 <= record.stage.position <= 24
+    )

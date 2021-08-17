@@ -1,5 +1,6 @@
 from use_cases.records import RecordNotBetterException
 from discord.ext import commands
+from discord.ext.commands.context import Context
 
 from db import get_session
 
@@ -7,7 +8,7 @@ MY_ID = 97904188918345728
 
 
 def is_me():
-    def predicate(ctx):
+    def predicate(ctx: Context):
         return ctx.message.author.id == MY_ID
 
     return commands.check(predicate)
@@ -17,7 +18,13 @@ class OwnerCommand(commands.Cog):
     @commands.command()
     @is_me()
     async def add(
-        self, ctx, character_name, stage_name, time_string, player_name, video_link
+        self,
+        ctx: Context,
+        character_name: str,
+        stage_name: str,
+        time_string: str,
+        player_name: str,
+        video_link: str,
     ):
         from use_cases.character import get_character_by_name
         from use_cases.frame_conversion import time_string_to_frames
@@ -70,7 +77,7 @@ class OwnerCommand(commands.Cog):
 
     @commands.command()
     @is_me()
-    async def aliasc(self, ctx, aliased_name, known_name):
+    async def aliasc(self, ctx: Context, aliased_name: str, known_name: str):
         from use_cases.aliases import add_char_stage_alias
 
         session = get_session()
@@ -93,7 +100,7 @@ class OwnerCommand(commands.Cog):
 
     @commands.command()
     @is_me()
-    async def aliasp(self, ctx, aliased_name, known_name):
+    async def aliasp(self, ctx: Context, aliased_name: str, known_name: str):
         from use_cases.aliases import add_player_alias
 
         session = get_session()
