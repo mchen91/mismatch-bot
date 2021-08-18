@@ -85,6 +85,16 @@ def get_all_records(*, session: Session) -> List[Record]:
     )
 
 
+def get_all_complete_records(*, session: Session) -> List[Record]:
+    return (
+        session.query(Record)
+        .join(Record.players)
+        .options(contains_eager(Record.players))
+        .filter(Record.partial_targets == None)
+        .all()
+    )
+
+
 def get_records_by_character(*, session: Session, character: Character) -> List[Record]:
     return (
         session.query(Record)

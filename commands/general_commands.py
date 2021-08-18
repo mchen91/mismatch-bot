@@ -15,8 +15,7 @@ class GeneralCommand(commands.Cog):
     )
     async def wr(self, ctx: Context, char_and_stage: str):
         from use_cases.character import get_character_by_name
-        from use_cases.frame_conversion import frames_to_time_string
-        from use_cases.records import get_record
+        from use_cases.records import get_record, get_formatted_record_string
         from use_cases.stage import get_stage_by_name
 
         combo_array = char_and_stage.split("/")
@@ -45,13 +44,7 @@ class GeneralCommand(commands.Cog):
                 ",".join(player.name for player in record.players) or "Anonymous"
             )
             video_link_string = f"at {record.video_link}" if record.video_link else ""
-            record_value = (
-                f"{record.partial_targets} target"
-                if record.partial_targets == 1
-                else f"{record.partial_targets} targets"
-                if record.partial_targets is not None
-                else frames_to_time_string(record.time)
-            )
+            record_value = get_formatted_record_string(record)
             msg = f"{record.character.name}/{record.stage.name} - {record_value} by {players_string} {video_link_string}"
         else:
             msg = f"No record found for {character.name}/{stage.name}"
@@ -69,6 +62,7 @@ class GeneralCommand(commands.Cog):
         from use_cases.records import (
             get_23_stage_total,
             get_25_stage_total,
+            get_formatted_record_string,
             get_records_by_character,
         )
 
@@ -77,13 +71,7 @@ class GeneralCommand(commands.Cog):
         records = get_records_by_character(session=session, character=character)
         description_lines = [f"{character.name} Character Records"]
         for record in records:
-            record_string = (
-                f"{record.partial_targets} target"
-                if record.partial_targets == 1
-                else f"{record.partial_targets} targets"
-                if record.time is None
-                else frames_to_time_string(record.time)
-            )
+            record_value = get_formatted_record_string(record)
             if record.video_link:
                 record_string = f"[{record_string}]({record.video_link})"
             players = (
@@ -182,7 +170,7 @@ class GeneralCommand(commands.Cog):
         aliases=["worst", "worsttotal", "worst-total"],
         help="Shows worst mismatch total",
     )
-    async def wt(self, ctx):
+    async def wt(self, ctx: Context):
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.total import get_worst_total_records
@@ -202,7 +190,7 @@ class GeneralCommand(commands.Cog):
     @commands.command(
         aliases=["best", "besttotal", "best-total"], help="Shows best mismatch total"
     )
-    async def bt(self, ctx):
+    async def bt(self, ctx: Context):
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.total import get_best_total_records
@@ -221,7 +209,7 @@ class GeneralCommand(commands.Cog):
         aliases=["bestfm", "besttotalfullmismatch", "bestful"],
         help="Shows best total with full mismatch (no vanilla char/stage pairings)",
     )
-    async def btfm(self, ctx):
+    async def btfm(self, ctx: Context):
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.total import get_best_total_full_mismatch_records
@@ -239,7 +227,7 @@ class GeneralCommand(commands.Cog):
     @commands.command(
         aliases=["record-count"], help="Shows number of records for each player"
     )
-    async def recordcount(self, ctx):
+    async def recordcount(self, ctx: Context):
         from use_cases.embeds import send_embeds
         from use_cases.records import get_all_records
 
@@ -258,7 +246,7 @@ class GeneralCommand(commands.Cog):
         session.close()
 
     @commands.command(help="Compare times between two characters")
-    async def compare(self, ctx, *char_names):
+    async def compare(self, ctx: Context, *char_names: str):
         from use_cases.character import get_character_by_name
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
@@ -298,7 +286,6 @@ class GeneralCommand(commands.Cog):
         frames_23_stages_MULTI = [
             get_23_stage_total(records=records) for records in records_MULTI
         ]
-        print(frames_23_stages_MULTI)
         time_strings_23_stages_MULTI = [
             frames_to_time_string(frames) for frames in frames_23_stages_MULTI
         ]
@@ -317,9 +304,23 @@ class GeneralCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
+    @commands.command(name="random")
+    async def random_(self, ctx: Context):
+        from use_cases.records import get_all_complete_records, get_formatted_record_string
+
+        session = get_session()
+        complete_records = get_all_complete_records(session=session)
+        record = random.choice(complete_records)
+        players_string = ",".join(player.name for player in record.players)
+        record_value = get_formatted_record_string(record=record)
+        video_link_string = f"at {record.video_link}"
+        msg = f"{record.character.name}/{record.stage.name} - {record_value} by {players_string} {video_link_string}"
+        await ctx.send(msg)
+        session.close()
+
     ### TEMP TEMP TEMP
     @commands.command(aliases=["inspireme"], help="Generates a TTRC3 claim")
-    async def claim(self, ctx, char_name=None):
+    async def claim(self, ctx: Context, char_name: str=None):
         from use_cases.character import get_character_by_position, get_character_by_name
 
         session = get_session()

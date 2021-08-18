@@ -31,3 +31,6 @@ def create_stage(*, session: Session, name: str, position: int):
     )
     session.commit()
     return new_stage
+
+def get_stage_by_position(*, session: Session, position: int):
+    return session.query(Stage).filter(Stage.position == position).first()
