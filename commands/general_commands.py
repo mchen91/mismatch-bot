@@ -71,7 +71,7 @@ class GeneralCommand(commands.Cog):
         records = get_records_by_character(session=session, character=character)
         description_lines = [f"{character.name} Character Records"]
         for record in records:
-            record_value = get_formatted_record_string(record=record)
+            record_string = get_formatted_record_string(record=record)
             if record.video_link:
                 record_string = f"[{record_string}]({record.video_link})"
             players = (
@@ -306,7 +306,10 @@ class GeneralCommand(commands.Cog):
 
     @commands.command(name="random")
     async def random_(self, ctx: Context):
-        from use_cases.records import get_all_complete_records, get_formatted_record_string
+        from use_cases.records import (
+            get_all_complete_records,
+            get_formatted_record_string,
+        )
 
         session = get_session()
         complete_records = get_all_complete_records(session=session)
@@ -320,7 +323,7 @@ class GeneralCommand(commands.Cog):
 
     ### TEMP TEMP TEMP
     @commands.command(aliases=["inspireme"], help="Generates a TTRC3 claim")
-    async def claim(self, ctx: Context, char_name: str=None):
+    async def claim(self, ctx: Context, char_name: str = None):
         from use_cases.character import get_character_by_position, get_character_by_name
 
         session = get_session()

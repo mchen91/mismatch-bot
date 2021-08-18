@@ -75,9 +75,7 @@ def get_worst_total_records(session: Session):
         ]
         for character_records in records_matrix
     ]
-    assignment: Assignment = linear_sum_assignment(
-        inverted_cost_matrix
-    )
+    assignment: Assignment = linear_sum_assignment(inverted_cost_matrix)
     worst_records = [
         records_matrix[char_pos][stage_pos]
         for (char_pos, stage_pos) in zip(*assignment)
