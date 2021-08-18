@@ -44,7 +44,7 @@ class GeneralCommand(commands.Cog):
                 ",".join(player.name for player in record.players) or "Anonymous"
             )
             video_link_string = f"at {record.video_link}" if record.video_link else ""
-            record_value = get_formatted_record_string(record)
+            record_value = get_formatted_record_string(record=record)
             msg = f"{record.character.name}/{record.stage.name} - {record_value} by {players_string} {video_link_string}"
         else:
             msg = f"No record found for {character.name}/{stage.name}"
@@ -71,7 +71,7 @@ class GeneralCommand(commands.Cog):
         records = get_records_by_character(session=session, character=character)
         description_lines = [f"{character.name} Character Records"]
         for record in records:
-            record_value = get_formatted_record_string(record)
+            record_value = get_formatted_record_string(record=record)
             if record.video_link:
                 record_string = f"[{record_string}]({record.video_link})"
             players = (
