@@ -99,7 +99,11 @@ class GeneralCommand(commands.Cog):
     async def stage(self, ctx: Context, stage_name: str):
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
-        from use_cases.records import get_25_stage_total, get_records_by_stage
+        from use_cases.records import (
+            get_25_stage_total,
+            get_formatted_record_string,
+            get_records_by_stage,
+        )
         from use_cases.stage import get_stage_by_name
 
         session = get_session()
@@ -107,13 +111,7 @@ class GeneralCommand(commands.Cog):
         records = get_records_by_stage(session=session, stage=stage)
         description_lines = [f"{stage.name} Stage Records"]
         for record in records:
-            record_string = (
-                f"{record.partial_targets} target"
-                if record.partial_targets == 1
-                else f"{record.partial_targets} targets"
-                if record.time is None
-                else frames_to_time_string(record.time)
-            )
+            record_string = get_formatted_record_string(record=record)
             if record.video_link:
                 record_string = f"[{record_string}]({record.video_link})"
             players = (
