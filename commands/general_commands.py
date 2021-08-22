@@ -93,6 +93,50 @@ class GeneralCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
+    # TODO: refactor charsorted and stagesorted (cf. char and stage)
+    @commands.command(
+        aliases=["charactersorted", "charsort", "charorder", "charordered", "charfast", "charfastest"],
+        help=f"Shows orderedrecords for a given character, e.g. {COMMAND_PREFIX}charsorted yoshi",
+    )
+    async def charsorted(self, ctx: Context, character_name: str):
+        from use_cases.character import get_character_by_name
+        from use_cases.embeds import send_embeds
+        from use_cases.frame_conversion import frames_to_time_string
+        from use_cases.records import (
+            get_23_stage_total,
+            get_25_stage_total,
+            get_formatted_record_string,
+            get_records_by_character,
+        )
+
+        session = get_session()
+        character = get_character_by_name(session=session, name=character_name)
+        records = get_records_by_character(session=session, character=character)
+        sorted_records = sorted(records, key=lambda record: record.partial_targets + 1e6 if record.time is None else record.time)
+        description_lines = [f"{character.name} Character Records"]
+        for record in sorted_records:
+            record_string = get_formatted_record_string(record=record)
+            if record.video_link:
+                record_string = f"[{record_string}]({record.video_link})"
+            players = (
+                ",".join(player.name for player in record.players)
+                if record.players
+                else "Anonymous"
+            )
+            description_lines.append(
+                f"{record.stage.name} - {record_string} - {players}"
+            )
+        frames_23_stages = get_23_stage_total(records=records)
+        description_lines.append(
+            f"23 Stage Total: {frames_to_time_string(frames_23_stages)}"
+        )
+        total_frames = get_25_stage_total(records=records)
+        description_lines.append(
+            f"25 Stage Total: {frames_to_time_string(total_frames)}"
+        )
+        await send_embeds(description_lines, ctx)
+        session.close()
+
     @commands.command(
         help=f"Shows records for a given stage, e.g. {COMMAND_PREFIX}stage mario",
     )
@@ -111,6 +155,44 @@ class GeneralCommand(commands.Cog):
         records = get_records_by_stage(session=session, stage=stage)
         description_lines = [f"{stage.name} Stage Records"]
         for record in records:
+            record_string = get_formatted_record_string(record=record)
+            if record.video_link:
+                record_string = f"[{record_string}]({record.video_link})"
+            players = (
+                ",".join(player.name for player in record.players)
+                if record.players
+                else "Anonymous"
+            )
+            description_lines.append(
+                f"{record.character.name} - {record_string} - {players}"
+            )
+        total_frames = get_25_stage_total(records=records)
+        description_lines.append(
+            f"25 Character Total: {frames_to_time_string(total_frames)}"
+        )
+        await send_embeds(description_lines, ctx)
+        session.close()
+
+    @commands.command(
+        aliases=["stagesort", "stageordered", "stageorder", "stagefast", "stagefastest"],
+        help=f"Shows records for a given stage sorted from fastest to slowest, e.g. {COMMAND_PREFIX}stagesorted mario",
+    )
+    async def stagesorted(self, ctx: Context, stage_name: str):
+        from use_cases.embeds import send_embeds
+        from use_cases.frame_conversion import frames_to_time_string
+        from use_cases.records import (
+            get_25_stage_total,
+            get_formatted_record_string,
+            get_records_by_stage,
+        )
+        from use_cases.stage import get_stage_by_name
+
+        session = get_session()
+        stage = get_stage_by_name(session=session, name=stage_name)
+        records = get_records_by_stage(session=session, stage=stage)
+        sorted_records = sorted(records, key=lambda record: record.partial_targets + 1e6 if record.time is None else record.time)
+        description_lines = [f"{stage.name} Stage Records"]
+        for record in sorted_records:
             record_string = get_formatted_record_string(record=record)
             if record.video_link:
                 record_string = f"[{record_string}]({record.video_link})"
