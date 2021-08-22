@@ -35,3 +35,7 @@ def create_character(*, session: Session, name: str, position: int):
 
 def get_character_by_position(*, session: Session, position: int):
     return session.query(Character).filter(Character.position == position).first()
+
+
+def characters(*, session: Session):
+    return session.query(Character).order_by(Character.position)

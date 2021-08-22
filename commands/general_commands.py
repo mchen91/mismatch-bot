@@ -1,6 +1,7 @@
 import random
 from collections import defaultdict
 from decimal import Decimal
+from use_cases.embeds import send_embeds
 
 from discord.ext import commands
 from discord.ext.commands.context import Context
@@ -134,6 +135,24 @@ class GeneralCommand(commands.Cog):
         description_lines.append(
             f"25 Stage Total: {frames_to_time_string(total_frames)}"
         )
+        await send_embeds(description_lines, ctx)
+        session.close()
+
+    @commands.command(aliases=["chartotal"])
+    async def chartotals(self, ctx: Context):
+        from use_cases.character import characters
+        from use_cases.frame_conversion import frames_to_time_string
+        from use_cases.records import get_25_stage_total, get_records_by_character
+
+        session = get_session()
+        description_lines = [f"All Character 25 Stage Totals"]
+        grand_total = 0
+        for character in characters(session=session):
+            records = get_records_by_character(session=session, character=character)
+            total_frames = get_25_stage_total(records=records)
+            grand_total += total_frames
+            description_lines.append(f"{character.name} - {frames_to_time_string(total_frames)}")
+        description_lines.append(f"Total: {frames_to_time_string(grand_total)}")
         await send_embeds(description_lines, ctx)
         session.close()
 

@@ -15,10 +15,15 @@ def time_string_to_frames(time_string: str):
 
 
 def frames_to_time_string(frames: int):
-    minutes = frames // 3600
-    seconds = (frames // 60) % 60
-    centiseconds = ((frames % 60) * 99) // 59
+    hours, rem = divmod(frames, 60 * 60 * 60)
+    minutes, rem = divmod(rem, 60 * 60)
+    seconds, rem = divmod(rem, 60)
+    centiseconds = (rem * 99) // 59
     padded_centis = str(centiseconds).zfill(2)
+    if hours > 0:
+        padded_minutes = str(minutes).zfill(2)
+        padded_seconds = str(seconds).zfill(2)
+        return f"{hours}:{padded_minutes}:{padded_seconds}.{padded_centis}"
     if minutes > 0:
         padded_seconds = str(seconds).zfill(2)
         return f"{minutes}:{padded_seconds}.{padded_centis}"
