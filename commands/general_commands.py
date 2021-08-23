@@ -78,7 +78,7 @@ class GeneralCommand(commands.Cog):
             players = (
                 ",".join(player.name for player in record.players)
                 if record.players
-                else "Anonymous"
+                else "N/A"
             )
             description_lines.append(
                 f"{record.stage.name} - {record_string} - {players}"
@@ -134,7 +134,7 @@ class GeneralCommand(commands.Cog):
             players = (
                 ",".join(player.name for player in record.players)
                 if record.players
-                else "Anonymous"
+                else "N/A"
             )
             description_lines.append(
                 f"{record.stage.name} - {record_string} - {players}"
@@ -194,7 +194,7 @@ class GeneralCommand(commands.Cog):
             players = (
                 ",".join(player.name for player in record.players)
                 if record.players
-                else "Anonymous"
+                else "N/A"
             )
             description_lines.append(
                 f"{record.character.name} - {record_string} - {players}"
@@ -243,7 +243,7 @@ class GeneralCommand(commands.Cog):
             players = (
                 ",".join(player.name for player in record.players)
                 if record.players
-                else "Anonymous"
+                else "N/A"
             )
             description_lines.append(
                 f"{record.character.name} - {record_string} - {players}"
@@ -278,7 +278,7 @@ class GeneralCommand(commands.Cog):
             players = (
                 ",".join(player.name for player in record.players)
                 if record.players
-                else "Anonymous"
+                else "N/A"
             )
             description_lines.append(
                 f"{record.character.name}/{record.stage.name} - {record_string} - {players}"
@@ -401,7 +401,7 @@ class GeneralCommand(commands.Cog):
             # players = (
             #     ",".join(player.name for player in record.players)
             #     if record.players
-            #     else "Anonymous"
+            #     else "N/A"
             # )
             joined_record_string = "/".join(record_string_MULTI)
             description_lines.append(
