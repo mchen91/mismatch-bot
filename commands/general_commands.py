@@ -96,7 +96,14 @@ class GeneralCommand(commands.Cog):
 
     # TODO: refactor charsorted and stagesorted (cf. char and stage)
     @commands.command(
-        aliases=["charactersorted", "charsort", "charorder", "charordered", "charfast", "charfastest"],
+        aliases=[
+            "charactersorted",
+            "charsort",
+            "charorder",
+            "charordered",
+            "charfast",
+            "charfastest",
+        ],
         help=f"Shows orderedrecords for a given character, e.g. {COMMAND_PREFIX}charsorted yoshi",
     )
     async def charsorted(self, ctx: Context, character_name: str):
@@ -113,7 +120,12 @@ class GeneralCommand(commands.Cog):
         session = get_session()
         character = get_character_by_name(session=session, name=character_name)
         records = get_records_by_character(session=session, character=character)
-        sorted_records = sorted(records, key=lambda record: record.partial_targets + 1e6 if record.time is None else record.time)
+        sorted_records = sorted(
+            records,
+            key=lambda record: -record.partial_targets + 1e6
+            if record.time is None
+            else record.time,
+        )
         description_lines = [f"{character.name} Character Records"]
         for record in sorted_records:
             record_string = get_formatted_record_string(record=record)
@@ -151,7 +163,9 @@ class GeneralCommand(commands.Cog):
             records = get_records_by_character(session=session, character=character)
             total_frames = get_25_stage_total(records=records)
             grand_total += total_frames
-            description_lines.append(f"{character.name} - {frames_to_time_string(total_frames)}")
+            description_lines.append(
+                f"{character.name} - {frames_to_time_string(total_frames)}"
+            )
         description_lines.append(f"Total: {frames_to_time_string(grand_total)}")
         await send_embeds(description_lines, ctx)
         session.close()
@@ -193,7 +207,13 @@ class GeneralCommand(commands.Cog):
         session.close()
 
     @commands.command(
-        aliases=["stagesort", "stageordered", "stageorder", "stagefast", "stagefastest"],
+        aliases=[
+            "stagesort",
+            "stageordered",
+            "stageorder",
+            "stagefast",
+            "stagefastest",
+        ],
         help=f"Shows records for a given stage sorted from fastest to slowest, e.g. {COMMAND_PREFIX}stagesorted mario",
     )
     async def stagesorted(self, ctx: Context, stage_name: str):
@@ -209,7 +229,12 @@ class GeneralCommand(commands.Cog):
         session = get_session()
         stage = get_stage_by_name(session=session, name=stage_name)
         records = get_records_by_stage(session=session, stage=stage)
-        sorted_records = sorted(records, key=lambda record: record.partial_targets + 1e6 if record.time is None else record.time)
+        sorted_records = sorted(
+            records,
+            key=lambda record: -record.partial_targets + 1e6
+            if record.time is None
+            else record.time,
+        )
         description_lines = [f"{stage.name} Stage Records"]
         for record in sorted_records:
             record_string = get_formatted_record_string(record=record)
