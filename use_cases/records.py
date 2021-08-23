@@ -156,3 +156,7 @@ def get_25_stage_total(*, records: List[Record]):
         for record in records
         if record.time is not None and 0 <= record.stage.position <= 24
     )
+
+
+def get_total(*, records: List[Record]):
+    return sum(record.time for record in records if record.time is not None)

@@ -154,19 +154,23 @@ class GeneralCommand(commands.Cog):
     async def chartotals(self, ctx: Context):
         from use_cases.character import characters
         from use_cases.frame_conversion import frames_to_time_string
-        from use_cases.records import get_25_stage_total, get_records_by_character
+        from use_cases.records import (
+            get_25_stage_total,
+            get_records_by_character,
+            get_total,
+        )
 
         session = get_session()
         description_lines = [f"All Character 25 Stage Totals"]
         grand_total = 0
         for character in characters(session=session):
             records = get_records_by_character(session=session, character=character)
-            total_frames = get_25_stage_total(records=records)
-            grand_total += total_frames
+            frames_25_stages = get_25_stage_total(records=records)
+            grand_total += get_total(records=records)
             description_lines.append(
-                f"{character.name} - {frames_to_time_string(total_frames)}"
+                f"{character.name} - {frames_to_time_string(frames_25_stages)}"
             )
-        description_lines.append(f"Total: {frames_to_time_string(grand_total)}")
+        description_lines.append(f"Grand Total: {frames_to_time_string(grand_total)}")
         await send_embeds(description_lines, ctx)
         session.close()
 
