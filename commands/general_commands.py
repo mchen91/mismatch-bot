@@ -161,7 +161,7 @@ class GeneralCommand(commands.Cog):
         )
 
         session = get_session()
-        description_lines = [f"All Character 25 Stage Totals"]
+        description_lines = [f"25 Stage Totals for each Character"]
         grand_total = 0
         for character in characters(session=session):
             records = get_records_by_character(session=session, character=character)
