@@ -449,6 +449,18 @@ class GeneralCommand(commands.Cog):
         await ctx.send(msg)
         session.close()
 
+    @commands.command(name="primes")
+    async def primes_(self, ctx: Context):
+        from use_cases.primes import is_prime
+        from use_cases.records import get_all_complete_records
+
+        session = get_session()
+        complete_records = get_all_complete_records(session=session)
+        num_prime_framed_records = sum(1 for record in complete_records if is_prime(record.time))
+        msg = f"There are {num_prime_framed_records} records with a prime frame count"
+        await ctx.send(msg)
+        session.close()
+
     ### TEMP TEMP TEMP
     @commands.command(aliases=["inspireme"], help="Generates a TTRC3 claim")
     async def claim(self, ctx: Context, char_name: str = None):
