@@ -181,7 +181,7 @@ class GeneralCommand(commands.Cog):
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.records import (
-            get_25_stage_total,
+            get_25_character_total,
             get_formatted_record_string,
             get_records_by_stage,
         )
@@ -203,7 +203,7 @@ class GeneralCommand(commands.Cog):
             description_lines.append(
                 f"{record.character.name} - {record_string} - {players}"
             )
-        total_frames = get_25_stage_total(records=records)
+        total_frames = get_25_character_total(records=records)
         description_lines.append(
             f"25 Character Total: {frames_to_time_string(total_frames)}"
         )
@@ -456,7 +456,9 @@ class GeneralCommand(commands.Cog):
 
         session = get_session()
         complete_records = get_all_complete_records(session=session)
-        num_prime_framed_records = sum(1 for record in complete_records if is_prime(record.time))
+        num_prime_framed_records = sum(
+            1 for record in complete_records if is_prime(record.time)
+        )
         msg = f"There are {num_prime_framed_records} records with a prime frame count"
         await ctx.send(msg)
         session.close()

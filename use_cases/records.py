@@ -158,5 +158,13 @@ def get_25_stage_total(*, records: List[Record]):
     )
 
 
+def get_25_character_total(*, records: List[Record]):
+    return sum(
+        record.time
+        for record in records
+        if record.time is not None and 0 <= record.character.position <= 24
+    )
+
+
 def get_total(*, records: List[Record]):
     return sum(record.time for record in records if record.time is not None)

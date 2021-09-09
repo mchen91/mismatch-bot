@@ -1,5 +1,6 @@
 import itertools
 
+
 def is_prime(n):
     if n < 4:
         return True
