@@ -294,6 +294,30 @@ class GeneralCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
+    @commands.command(aliases=["stagetotal"])
+    async def stagetotals(self, ctx: Context):
+        from use_cases.frame_conversion import frames_to_time_string
+        from use_cases.records import (
+            get_25_character_total,
+            get_records_by_stage,
+            get_total,
+        )
+        from use_cases.stage import stages
+
+        session = get_session()
+        description_lines = [f"25 Character Totals for each Stage"]
+        grand_total = 0
+        for stage in stages(session=session):
+            records = get_records_by_stage(session=session, stage=stage)
+            frames_25_stages = get_25_character_total(records=records)
+            grand_total += get_total(records=records)
+            description_lines.append(
+                f"{stage.name} - {frames_to_time_string(frames_25_stages)}"
+            )
+        description_lines.append(f"Grand Total: {frames_to_time_string(grand_total)}")
+        await send_embeds(description_lines, ctx)
+        session.close()
+
     @commands.command(
         aliases=["worst", "worsttotal", "worst-total"],
         help="Shows worst mismatch total",

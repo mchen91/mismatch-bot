@@ -35,3 +35,7 @@ def create_stage(*, session: Session, name: str, position: int):
 
 def get_stage_by_position(*, session: Session, position: int):
     return session.query(Stage).filter(Stage.position == position).first()
+
+
+def stages(*, session: Session):
+    return session.query(Stage).order_by(Stage.position)
