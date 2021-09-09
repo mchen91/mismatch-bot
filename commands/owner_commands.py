@@ -78,7 +78,7 @@ class OwnerCommand(commands.Cog):
             if prev_record.players
             else "Anonymous"
         )
-        prev_record_string = get_formatted_record_string(prev_record)
+        prev_record_string = get_formatted_record_string(record=prev_record)
         prev_frames_23_stages = get_23_stage_total(records=records)
         prev_frames_25_stages = get_25_stage_total(records=records)
         # prev_worst_total_records = get_worst_total_records(session)
