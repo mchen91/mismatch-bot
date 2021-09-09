@@ -35,6 +35,7 @@ class OwnerCommand(commands.Cog):
         from use_cases.player import get_player_by_name
         from use_cases.records import (
             add_record,
+            get_formatted_record_string,
             get_record,
             get_records_by_character,
             get_23_stage_total,
@@ -77,7 +78,7 @@ class OwnerCommand(commands.Cog):
             if prev_record.players
             else "Anonymous"
         )
-        prev_time_string = frames_to_time_string(prev_record.time)
+        prev_record_string = get_formatted_record_string(prev_record)
         prev_frames_23_stages = get_23_stage_total(records=records)
         prev_frames_25_stages = get_25_stage_total(records=records)
         # prev_worst_total_records = get_worst_total_records(session)
@@ -97,7 +98,7 @@ class OwnerCommand(commands.Cog):
             await ctx.send(f"Did not add; worse than existing record")
         else:
             description_lines = [
-                f"Improved {record.character.name}/{record.stage.name} from [{prev_time_string} by {prev_record_holders}]({prev_video_link}) to [{time_string} by {player.name}]({video_link})"
+                f"Improved {record.character.name}/{record.stage.name} from [{prev_record_string} by {prev_record_holders}]({prev_video_link}) to [{time_string} by {player.name}]({video_link})"
             ]
             new_records = get_records_by_character(session=session, character=character)
             new_frames_23_stages = get_23_stage_total(records=new_records)
