@@ -203,6 +203,30 @@ class GeneralSlashCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
+    @cog_ext.cog_slash(
+        name="recordcount",
+        description="Displays the record count for each player",
+        guild_ids=GUILD_IDS,
+        options=[],
+    )
+    async def recordcount(self, ctx: Context):
+        from use_cases.embeds import send_embeds
+        from use_cases.records import get_all_records
+
+        session = get_session()
+        records = get_all_records(session=session)
+        record_count = defaultdict(int)
+        for record in records:
+            for player in record.players:
+                record_count[player.name] += 1
+        description_lines = ["Record Count"]
+        for player_name, count in sorted(
+            record_count.items(), key=lambda tuple: tuple[1], reverse=True
+        ):
+            description_lines.append(f"{player_name} - {count}")
+        await send_embeds(description_lines, ctx)
+        session.close()
+
 
 class GeneralCommand(commands.Cog):
     @commands.command(
