@@ -67,6 +67,7 @@ class OwnerSlashCommand(commands.Cog):
                 create_permission(MY_ID, SlashCommandPermissionType.USER, True)
             ],
         },
+        default_permission=False,
     )
     async def add(
         self,
