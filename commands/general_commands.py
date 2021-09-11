@@ -65,6 +65,74 @@ class GeneralSlashCommand(commands.Cog):
         await ctx.send(msg)
         session.close()
 
+    
+    @cog_ext.cog_slash(
+        name="stage",
+        description="Shows records for a given stage",
+        guild_ids=GUILD_IDS,
+        options=[
+            create_option(
+                name="stage",
+                description="Choose a stage",
+                option_type=3,
+                required=True,
+                # limited to 25 choices - we have 32 characters
+                # choices=[create_choice(name=char, value=char) for char in CHARACTERS],
+            ),
+            create_option(
+                name="sorted",
+                description="Order by fastest to slowest",
+                option_type=5,
+                required=False,
+                # limited to 25 choices - we have 26 stages
+                # choices=[create_choice(name=stage, value=stage) for stage in STAGES],
+            ),
+        ],
+        connector={
+            "stage": "stage_name",
+            "sorted": "is_sorted",
+        },
+    )
+    async def stage(self, ctx: Context, stage_name: str, is_sorted: bool = False):
+        from use_cases.embeds import send_embeds
+        from use_cases.frame_conversion import frames_to_time_string
+        from use_cases.records import (
+            get_25_character_total,
+            get_formatted_record_string,
+            get_records_by_stage,
+        )
+        from use_cases.stage import get_stage_by_name
+
+        session = get_session()
+        stage = get_stage_by_name(session=session, name=stage_name)
+        records = get_records_by_stage(session=session, stage=stage)
+        if is_sorted:
+            records = sorted(
+                records,
+                key=lambda record: -record.partial_targets + 1e6
+                if record.time is None
+                else record.time,
+            )
+        description_lines = [f"{stage.name} Stage Records"]
+        for record in records:
+            record_string = get_formatted_record_string(record=record)
+            if record.video_link:
+                record_string = f"[{record_string}]({record.video_link})"
+            players = (
+                ",".join(player.name for player in record.players)
+                if record.players
+                else "N/A"
+            )
+            description_lines.append(
+                f"{record.character.name} - {record_string} - {players}"
+            )
+        total_frames = get_25_character_total(records=records)
+        description_lines.append(
+            f"25 Character Total: {frames_to_time_string(total_frames)}"
+        )
+        await send_embeds(description_lines, ctx)
+        session.close()
+
 
 class GeneralCommand(commands.Cog):
     @commands.command(
