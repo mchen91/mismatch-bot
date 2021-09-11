@@ -16,6 +16,7 @@ from commands.constants import COMMAND_PREFIX, GUILD_IDS
 class GeneralSlashCommand(commands.Cog):
     @cog_ext.cog_slash(
         name="wr",
+        description="Provides the world record for a given character and stage",
         guild_ids=GUILD_IDS,
         options=[
             create_option(
