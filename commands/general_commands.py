@@ -10,15 +10,13 @@ from discord_slash import cog_ext, SlashContext
 from discord_slash.utils.manage_commands import create_option
 
 from db import get_session
-from commands.constants import COMMAND_PREFIX
-
-guild_ids = [int(os.environ["GUILD_ID"])]
+from commands.constants import COMMAND_PREFIX, GUILD_IDS
 
 
 class GeneralSlashCommand(commands.Cog):
     @cog_ext.cog_slash(
         name="wr",
-        guild_ids=guild_ids,
+        guild_ids=GUILD_IDS,
         options=[
             create_option(
                 name="character",

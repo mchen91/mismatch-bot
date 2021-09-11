@@ -63,3 +63,7 @@ STAGES = [
     "Roy",
     "Seak",
 ]
+
+stadium_guild_id = 132025591770644480
+personal_server_guild_id = 691372285080109086
+GUILD_IDS = [stadium_guild_id, personal_server_guild_id]
