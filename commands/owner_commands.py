@@ -1,7 +1,11 @@
 from use_cases.records import RecordNotBetterException
 from discord.ext import commands
 from discord.ext.commands.context import Context
+from discord_slash import cog_ext
+from discord_slash.model import SlashCommandPermissionType
+from discord_slash.utils.manage_commands import create_option, create_permission
 
+from commands.constants import GUILD_IDS, PERSONAL_SERVER_GUILD_ID, STADIUM_GUILD_ID
 from db import get_session
 
 MY_ID = 97904188918345728
@@ -14,9 +18,56 @@ def is_me():
     return commands.check(predicate)
 
 
-class OwnerCommand(commands.Cog):
-    @commands.command()
-    @is_me()
+class OwnerSlashCommand(commands.Cog):
+    @cog_ext.cog_slash(
+        name="add-wr",
+        description="Add a new WR",
+        guild_ids=GUILD_IDS,
+        options=[
+            create_option(
+                name="character_name",
+                description="Choose a character for the WR",
+                option_type=3,
+                required=True,
+                # limited to 25 choices - we have 32 characters
+                # choices=[create_choice(name=char, value=char) for char in CHARACTERS],
+            ),
+            create_option(
+                name="stage_name",
+                description="Choose a stage for the WR",
+                option_type=3,
+                required=True,
+                # limited to 25 choices - we have 26 stages
+                # choices=[create_choice(name=stage, value=stage) for stage in STAGES],
+            ),
+            create_option(
+                name="time_string",
+                description="The record value",
+                option_type=3,
+                required=True,
+            ),
+            create_option(
+                name="player_name",
+                description="User who set the record",
+                option_type=3,
+                required=True,
+            ),
+            create_option(
+                name="video_link",
+                description="Link to the video",
+                option_type=3,
+                required=True,
+            ),
+        ],
+        permissions={
+            PERSONAL_SERVER_GUILD_ID: [
+                create_permission(MY_ID, SlashCommandPermissionType.USER, True)
+            ],
+            STADIUM_GUILD_ID: [
+                create_permission(MY_ID, SlashCommandPermissionType.USER, True)
+            ],
+        },
+    )
     async def add(
         self,
         ctx: Context,
@@ -38,6 +89,7 @@ class OwnerCommand(commands.Cog):
             get_formatted_record_string,
             get_record,
             get_records_by_character,
+            # get_records_by_stage,
             get_23_stage_total,
             get_25_stage_total,
         )
@@ -81,6 +133,8 @@ class OwnerCommand(commands.Cog):
         prev_record_string = get_formatted_record_string(record=prev_record)
         prev_frames_23_stages = get_23_stage_total(records=records)
         prev_frames_25_stages = get_25_stage_total(records=records)
+        # prev_stage_records = get_records_by_stage(session=session, stage=stage)
+        # prev_stage_total = get_25_stage_total(records=prev_stage_records)
         # prev_worst_total_records = get_worst_total_records(session)
         # prev_best_total = get_best_total_records(session)
         # prev_best_total_full_mismatch = get_best_total_full_mismatch_records(session)
@@ -115,12 +169,22 @@ class OwnerCommand(commands.Cog):
                 description_lines.append(
                     f"25 Stage total improved from {prev_25_total} to {new_25_total}"
                 )
+            # new_stage_records = get_records_by_stage(session=session, stage=stage)
+            # new_stage_total = get_25_stage_total(records=new_stage_records)
+            # if new_stage_total < prev_stage_total:
+            #     prev_stage_total_string = frames_to_time_string(prev_stage_total)
+            #     new_stage_total_string = frames_to_time_string(new_stage_total)
+            #     description_lines.append(
+            #         f"{stage.name} stage total improved from {prev_25_total} to {new_25_total}"
+            #     )
             # new_worst_total = get_worst_total_records(session)
             # new_best_total = get_best_total_records(session)
             # new_best_total_full_mismatch = get_best_total_full_mismatch_records(session)
             await send_embeds(description_lines, ctx)
         session.close()
 
+
+class OwnerCommand(commands.Cog):
     @commands.command()
     @is_me()
     async def aliasc(self, ctx: Context, aliased_name: str, known_name: str):

@@ -1,4 +1,3 @@
-import os
 import random
 from collections import defaultdict
 from decimal import Decimal
@@ -137,7 +136,6 @@ class GeneralSlashCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-    
     @cog_ext.cog_slash(
         name="stage",
         description="Shows records for a given stage",

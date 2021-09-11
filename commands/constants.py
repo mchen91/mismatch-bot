@@ -66,8 +66,8 @@ STAGES = [
     "Seak",
 ]
 
-stadium_guild_id = 132025591770644480
-personal_server_guild_id = 691372285080109086
-GUILD_IDS = [personal_server_guild_id]
+STADIUM_GUILD_ID = 132025591770644480
+PERSONAL_SERVER_GUILD_ID = 691372285080109086
+GUILD_IDS = [PERSONAL_SERVER_GUILD_ID]
 if os.environ.get("IS_PROD"):
-    GUILD_IDS.append(stadium_guild_id)
+    GUILD_IDS.append(STADIUM_GUILD_ID)

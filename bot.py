@@ -5,7 +5,7 @@ from discord_slash import SlashCommand
 
 from commands.constants import COMMAND_PREFIX
 from commands.general_commands import GeneralCommand, GeneralSlashCommand
-from commands.owner_commands import OwnerCommand
+from commands.owner_commands import OwnerCommand, OwnerSlashCommand
 
 
 bot = commands.Bot(command_prefix=COMMAND_PREFIX)
@@ -22,4 +22,5 @@ async def on_command_error(ctx, error):
 bot.add_cog(GeneralCommand(bot))
 bot.add_cog(OwnerCommand(bot))
 bot.add_cog(GeneralSlashCommand(bot))
+bot.add_cog(OwnerSlashCommand(bot))
 bot.run(os.environ["DISCORD_TOKEN"])
