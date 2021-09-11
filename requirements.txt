@@ -1,6 +1,7 @@
 alembic
 black
 discord.py
+discord-py-interactions
 Flask
 Flask-Cors
 gunicorn

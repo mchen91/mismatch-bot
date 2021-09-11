@@ -1,3 +1,4 @@
+import os
 import random
 from collections import defaultdict
 from decimal import Decimal
@@ -5,14 +6,70 @@ from use_cases.embeds import send_embeds
 
 from discord.ext import commands
 from discord.ext.commands.context import Context
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option
 
 from db import get_session
 from commands.constants import COMMAND_PREFIX
 
+guild_ids = [int(os.environ["GUILD_ID"])]
+
+
+class GeneralSlashCommand(commands.Cog):
+    @cog_ext.cog_slash(
+        name="wr",
+        guild_ids=guild_ids,
+        options=[
+            create_option(
+                name="character",
+                description="Choose a character for the WR",
+                option_type=3,
+                required=True,
+                # limited to 25 choices - we have 32 characters
+                # choices=[create_choice(name=char, value=char) for char in CHARACTERS],
+            ),
+            create_option(
+                name="stage",
+                description="Choose a stage for the WR. Defaults to the character",
+                option_type=3,
+                required=False,
+                # limited to 25 choices - we have 26 stages
+                # choices=[create_choice(name=stage, value=stage) for stage in STAGES],
+            ),
+        ],
+        connector={
+            "character": "character_name",
+            "stage": "stage_name",
+        },
+    )
+    async def wr_(self, ctx: SlashContext, character_name: str, stage_name: str = None):
+        from use_cases.character import get_character_by_name
+        from use_cases.records import get_record, get_formatted_record_string
+        from use_cases.stage import get_stage_by_name
+
+        session = get_session()
+        character = get_character_by_name(session=session, name=character_name)
+
+        stage_name = stage_name or character_name
+        stage = get_stage_by_name(session=session, name=stage_name)
+        record = get_record(session=session, character=character, stage=stage)
+
+        if record:
+            players_string = (
+                ",".join(player.name for player in record.players) or "Anonymous"
+            )
+            video_link_string = f"at {record.video_link}" if record.video_link else ""
+            record_value = get_formatted_record_string(record=record)
+            msg = f"{record.character.name}/{record.stage.name} - {record_value} by {players_string} {video_link_string}"
+        else:
+            msg = f"No record found for {character.name}/{stage.name}"
+        await ctx.send(msg)
+        session.close()
+
 
 class GeneralCommand(commands.Cog):
     @commands.command(
-        help=f"Shows current record, e.g. {COMMAND_PREFIX}wr young link/samus"
+        help=f"Shows current record, e.g. {COMMAND_PREFIX}wr younglink/samus"
     )
     async def wr(self, ctx: Context, char_and_stage: str):
         from use_cases.character import get_character_by_name
@@ -22,7 +79,7 @@ class GeneralCommand(commands.Cog):
         combo_array = char_and_stage.split("/")
         if len(combo_array) != 2:
             await ctx.send(
-                f"syntax: {COMMAND_PREFIX}<char>/<stage>. e.g. `{COMMAND_PREFIX}wr young link/samus`"
+                f"syntax: {COMMAND_PREFIX}wr <char>/<stage>. e.g. `{COMMAND_PREFIX}wr younglink/samus`"
             )
             return
         character_name, stage_name = [s.strip() for s in combo_array]
