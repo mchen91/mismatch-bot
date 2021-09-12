@@ -6,7 +6,7 @@ from use_cases.embeds import send_embeds
 from discord.ext import commands
 from discord.ext.commands.context import Context
 from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option
+from discord_slash.utils.manage_commands import create_choice, create_option
 
 from db import get_session
 from commands.constants import COMMAND_PREFIX, GUILD_IDS
@@ -207,9 +207,30 @@ class GeneralSlashCommand(commands.Cog):
         name="recordcount",
         description="Displays the record count for each player",
         guild_ids=GUILD_IDS,
-        options=[],
+        options=[
+            create_option(
+                name="mode",
+                description="Optionally choose between mismatch only, vanilla only, or all records (default all)",
+                option_type=3,
+                choices=[
+                    create_choice(
+                        name="Mismatch only",
+                        value="mismatch-only",
+                    ),
+                    create_choice(
+                        name="Vanilla only",
+                        value="vanilla-only",
+                    ),
+                    create_choice(
+                        name="All",
+                        value="all",
+                    ),
+                ],
+                required=False,
+            ),
+        ],
     )
-    async def recordcount(self, ctx: Context):
+    async def recordcount(self, ctx: Context, mode: str = "all"):
         from use_cases.embeds import send_embeds
         from use_cases.records import get_all_records
 
@@ -217,9 +238,22 @@ class GeneralSlashCommand(commands.Cog):
         records = get_all_records(session=session)
         record_count = defaultdict(int)
         for record in records:
+            is_vanilla = (
+                record.character.position == record.stage.position
+                and record.character.position < 26
+            )
+            if mode == "mismatch-only" and is_vanilla:
+                continue
+            if mode == "vanilla-only" and not is_vanilla:
+                continue
             for player in record.players:
                 record_count[player.name] += 1
-        description_lines = ["Record Count"]
+        title = "Record Count"
+        if mode == "mismatch-only":
+            title = "Record Count (Mismatch only)"
+        elif mode == "vanilla-only":
+            title = "Record Count (Vanilla Only)"
+        description_lines = [title]
         for player_name, count in sorted(
             record_count.items(), key=lambda tuple: tuple[1], reverse=True
         ):
