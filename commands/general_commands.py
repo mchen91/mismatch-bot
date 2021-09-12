@@ -105,7 +105,9 @@ class GeneralSlashCommand(commands.Cog):
         session = get_session()
         character = get_character_by_name(session=session, name=character_name)
         records = get_records_by_character(session=session, character=character)
-        description_lines = [f"{character.name} Character Records"]
+        description_lines = [
+            f"{character.name} Character Records{' (sorted)' if is_sorted else ''}"
+        ]
         if is_sorted:
             records = sorted(
                 records,
@@ -183,7 +185,9 @@ class GeneralSlashCommand(commands.Cog):
                 if record.time is None
                 else record.time,
             )
-        description_lines = [f"{stage.name} Stage Records"]
+        description_lines = [
+            f"{stage.name} Stage Records{' (sorted)' if is_sorted else ''}"
+        ]
         for record in records:
             record_string = get_formatted_record_string(record=record)
             if record.video_link:
@@ -252,13 +256,30 @@ class GeneralSlashCommand(commands.Cog):
         if mode == "mismatch-only":
             title = "Record Count (Mismatch only)"
         elif mode == "vanilla-only":
-            title = "Record Count (Vanilla Only)"
+            title = "Record Count (Vanilla only)"
         description_lines = [title]
         for player_name, count in sorted(
             record_count.items(), key=lambda tuple: tuple[1], reverse=True
         ):
             description_lines.append(f"{player_name} - {count}")
         await send_embeds(description_lines, ctx)
+        session.close()
+
+    @cog_ext.cog_slash(
+        name="primes",
+        description="Displays the number of records with a prime frame count",
+    )
+    async def primes_(self, ctx: Context):
+        from use_cases.primes import is_prime
+        from use_cases.records import get_all_complete_records
+
+        session = get_session()
+        complete_records = get_all_complete_records(session=session)
+        num_prime_framed_records = sum(
+            1 for record in complete_records if is_prime(record.time)
+        )
+        msg = f"There are {num_prime_framed_records} records with a prime frame count"
+        await ctx.send(msg)
         session.close()
 
 
@@ -722,20 +743,6 @@ class GeneralCommand(commands.Cog):
         record_value = get_formatted_record_string(record=record)
         video_link_string = f"at {record.video_link}"
         msg = f"{record.character.name}/{record.stage.name} - {record_value} by {players_string} {video_link_string}"
-        await ctx.send(msg)
-        session.close()
-
-    @commands.command(name="primes")
-    async def primes_(self, ctx: Context):
-        from use_cases.primes import is_prime
-        from use_cases.records import get_all_complete_records
-
-        session = get_session()
-        complete_records = get_all_complete_records(session=session)
-        num_prime_framed_records = sum(
-            1 for record in complete_records if is_prime(record.time)
-        )
-        msg = f"There are {num_prime_framed_records} records with a prime frame count"
         await ctx.send(msg)
         session.close()
 
