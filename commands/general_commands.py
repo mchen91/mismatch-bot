@@ -264,20 +264,28 @@ class GeneralSlashCommand(commands.Cog):
 
     @cog_ext.cog_slash(
         name="primes",
-        description="Displays the number of records with a prime frame count",
+        description="Displays the number of records with a prime frame count or targets completed",
         guild_ids=GUILD_IDS,
     )
     async def primes(self, ctx: Context):
         from use_cases.primes import is_prime
-        from use_cases.records import get_all_complete_records
+        from use_cases.records import get_all_records
 
         session = get_session()
-        complete_records = get_all_complete_records(session=session)
-        num_prime_framed_records = sum(
-            1 for record in complete_records if is_prime(record.time)
-        )
-        msg = f"There are {num_prime_framed_records} records with a prime frame count"
-        await ctx.send(msg)
+        num_prime_framed_records = num_prime_framed_target_hits = 0
+        for record in get_all_records(session=session):
+            if record.time:
+                if is_prime(record.time):
+                    num_prime_framed_records += 1
+            else:
+                if is_prime(record.partial_targets):
+                    num_prime_framed_target_hits += 1
+        msg_lines = [
+            f"There are {num_prime_framed_records} records with a prime frame count",
+            f"There are {num_prime_framed_target_hits} records with a prime number of targets hit",
+        ]
+
+        await ctx.send("\n".join(msg_lines))
         session.close()
 
 
