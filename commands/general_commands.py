@@ -244,7 +244,8 @@ class GeneralSlashCommand(commands.Cog):
         for record in records:
             is_vanilla = (
                 record.character.position == record.stage.position
-                and record.character.position < 26
+                and record.character.position < 25
+                and record.stage.position < 25
             )
             if mode == "mismatch-only" and is_vanilla:
                 continue
