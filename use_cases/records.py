@@ -79,7 +79,7 @@ def get_record(*, session: Session, character: Character, stage: Stage):
 def get_all_records(*, session: Session) -> List[Record]:
     return (
         session.query(Record)
-        .join(Record.players)
+        .outerjoin(Record.players)
         .options(contains_eager(Record.players))
         .all()
     )
