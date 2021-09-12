@@ -265,6 +265,7 @@ class GeneralSlashCommand(commands.Cog):
     @cog_ext.cog_slash(
         name="primes",
         description="Displays the number of records with a prime frame count",
+        guild_ids=GUILD_IDS,
     )
     async def primes(self, ctx: Context):
         from use_cases.primes import is_prime
