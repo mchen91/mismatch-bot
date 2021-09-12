@@ -40,7 +40,7 @@ class GeneralSlashCommand(commands.Cog):
             "stage": "stage_name",
         },
     )
-    async def wr_(self, ctx: SlashContext, character_name: str, stage_name: str = None):
+    async def wr(self, ctx: SlashContext, character_name: str, stage_name: str = None):
         from use_cases.character import get_character_by_name
         from use_cases.records import get_record, get_formatted_record_string
         from use_cases.stage import get_stage_by_name
@@ -236,17 +236,13 @@ class GeneralSlashCommand(commands.Cog):
     )
     async def recordcount(self, ctx: Context, mode: str = "all"):
         from use_cases.embeds import send_embeds
-        from use_cases.records import get_all_records
+        from use_cases.records import get_all_records, is_vanilla_record
 
         session = get_session()
         records = get_all_records(session=session)
         record_count = defaultdict(int)
         for record in records:
-            is_vanilla = (
-                record.character.position == record.stage.position
-                and record.character.position < 25
-                and record.stage.position < 25
-            )
+            is_vanilla = is_vanilla_record(record)
             if mode == "mismatch-only" and is_vanilla:
                 continue
             if mode == "vanilla-only" and not is_vanilla:
@@ -270,7 +266,7 @@ class GeneralSlashCommand(commands.Cog):
         name="primes",
         description="Displays the number of records with a prime frame count",
     )
-    async def primes_(self, ctx: Context):
+    async def primes(self, ctx: Context):
         from use_cases.primes import is_prime
         from use_cases.records import get_all_complete_records
 

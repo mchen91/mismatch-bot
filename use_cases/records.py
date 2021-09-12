@@ -168,3 +168,11 @@ def get_25_character_total(*, records: List[Record]):
 
 def get_total(*, records: List[Record]):
     return sum(record.time for record in records if record.time is not None)
+
+
+def is_vanilla_record(record: Record):
+    return (
+        record.character.position == record.stage.position
+        and record.character.position < 25
+        and record.stage.position < 25
+    )
