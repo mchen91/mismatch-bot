@@ -288,6 +288,86 @@ class GeneralSlashCommand(commands.Cog):
         await ctx.send("\n".join(msg_lines))
         session.close()
 
+    @cog_ext.cog_slash(
+        name="compare",
+        description="Compare times between two characters",
+        guild_ids=GUILD_IDS,
+        options=[
+            create_option(
+                name="character1",
+                description="First character to compare",
+                option_type=3,
+                required=True,
+            ),
+            create_option(
+                name="character2",
+                description="Second character to compare",
+                option_type=3,
+                required=True,
+            ),
+        ],
+    )
+    async def compare(self, ctx: Context, **kwargs: str):
+        from use_cases.character import get_character_by_name
+        from use_cases.embeds import send_embeds
+        from use_cases.frame_conversion import frames_to_time_string
+        from use_cases.records import (
+            get_23_stage_total,
+            get_25_stage_total,
+            get_formatted_record_string,
+            get_records_by_character,
+        )
+
+        char_names = [kwargs["character1"], kwargs["character2"]]
+
+        session = get_session()
+        characters = [
+            get_character_by_name(session=session, name=char_name)
+            for char_name in char_names
+        ]
+        records_MULTI = [
+            get_records_by_character(session=session, character=character)
+            for character in characters
+        ]
+        title = " vs. ".join(character.name for character in characters)
+        description_lines = [title]
+        for records in zip(*records_MULTI):
+            record_string_MULTI = [
+                get_formatted_record_string(record=record) for record in records
+            ]
+            # record_string_MULTI: ["9.90", "9.97"]
+            record_string_with_video_MULTI = [
+                f"[{record_string}]({record.video_link})"
+                if record.video_link
+                else record_string
+                for (record, record_string) in zip(records, record_string_MULTI)
+            ]
+            # record_string_with_video_MULTI: ["[9.90"]
+            joined_record_string = " vs. ".join(record_string_with_video_MULTI)
+            description_lines.append(
+                f"{records[0].stage.name} - {joined_record_string}"
+            )
+        frames_23_stages_MULTI = [
+            get_23_stage_total(records=records) for records in records_MULTI
+        ]
+        time_strings_23_stages_MULTI = [
+            frames_to_time_string(frames) for frames in frames_23_stages_MULTI
+        ]
+        description_lines.append(
+            f"23 Stage Total: {'/'.join(time_strings_23_stages_MULTI)}"
+        )
+        frames_25_stages_MULTI = [
+            get_25_stage_total(records=records) for records in records_MULTI
+        ]
+        time_strings_25_stages_MULTI = [
+            frames_to_time_string(frames) for frames in frames_25_stages_MULTI
+        ]
+        description_lines.append(
+            f"25 Stage Total: {' vs. '.join(time_strings_25_stages_MULTI)}"
+        )
+        await send_embeds(description_lines, ctx)
+        session.close()
+
 
 class GeneralCommand(commands.Cog):
     @commands.command(
@@ -373,61 +453,15 @@ class GeneralCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-    # TODO: refactor charsorted and stagesorted (cf. char and stage)
     @commands.command(
-        aliases=[
-            "charactersorted",
-            "charsort",
-            "charorder",
-            "charordered",
-            "charfast",
-            "charfastest",
-        ],
+        aliases=["charactersorted", "charsort"],
         help=f"Shows orderedrecords for a given character, e.g. {COMMAND_PREFIX}charsorted yoshi",
     )
     async def charsorted(self, ctx: Context, character_name: str):
-        from use_cases.character import get_character_by_name
-        from use_cases.embeds import send_embeds
-        from use_cases.frame_conversion import frames_to_time_string
-        from use_cases.records import (
-            get_23_stage_total,
-            get_25_stage_total,
-            get_formatted_record_string,
-            get_records_by_character,
-        )
-
-        session = get_session()
-        character = get_character_by_name(session=session, name=character_name)
-        records = get_records_by_character(session=session, character=character)
-        sorted_records = sorted(
-            records,
-            key=lambda record: -record.partial_targets + 1e6
-            if record.time is None
-            else record.time,
-        )
-        description_lines = [f"{character.name} Character Records"]
-        for record in sorted_records:
-            record_string = get_formatted_record_string(record=record)
-            if record.video_link:
-                record_string = f"[{record_string}]({record.video_link})"
-            players = (
-                ",".join(player.name for player in record.players)
-                if record.players
-                else "N/A"
-            )
-            description_lines.append(
-                f"{record.stage.name} - {record_string} - {players}"
-            )
-        frames_23_stages = get_23_stage_total(records=records)
-        description_lines.append(
-            f"23 Stage Total: {frames_to_time_string(frames_23_stages)}"
-        )
-        total_frames = get_25_stage_total(records=records)
-        description_lines.append(
-            f"25 Stage Total: {frames_to_time_string(total_frames)}"
-        )
+        description_lines = [
+            f"This command has been REMOVED. Please use /char <character> sorted:True"
+        ]
         await send_embeds(description_lines, ctx)
-        session.close()
 
     @commands.command(aliases=["chartotal"])
     async def chartotals(self, ctx: Context):
@@ -490,53 +524,14 @@ class GeneralCommand(commands.Cog):
         session.close()
 
     @commands.command(
-        aliases=[
-            "stagesort",
-            "stageordered",
-            "stageorder",
-            "stagefast",
-            "stagefastest",
-        ],
+        aliases=["stagesort"],
         help=f"Shows records for a given stage sorted from fastest to slowest, e.g. {COMMAND_PREFIX}stagesorted mario",
     )
     async def stagesorted(self, ctx: Context, stage_name: str):
-        from use_cases.embeds import send_embeds
-        from use_cases.frame_conversion import frames_to_time_string
-        from use_cases.records import (
-            get_25_character_total,
-            get_formatted_record_string,
-            get_records_by_stage,
-        )
-        from use_cases.stage import get_stage_by_name
-
-        session = get_session()
-        stage = get_stage_by_name(session=session, name=stage_name)
-        records = get_records_by_stage(session=session, stage=stage)
-        sorted_records = sorted(
-            records,
-            key=lambda record: -record.partial_targets + 1e6
-            if record.time is None
-            else record.time,
-        )
-        description_lines = [f"{stage.name} Stage Records"]
-        for record in sorted_records:
-            record_string = get_formatted_record_string(record=record)
-            if record.video_link:
-                record_string = f"[{record_string}]({record.video_link})"
-            players = (
-                ",".join(player.name for player in record.players)
-                if record.players
-                else "N/A"
-            )
-            description_lines.append(
-                f"{record.character.name} - {record_string} - {players}"
-            )
-        total_frames = get_25_character_total(records=records)
-        description_lines.append(
-            f"25 Character Total: {frames_to_time_string(total_frames)}"
-        )
+        description_lines = [
+            f"This command has been REMOVED. Please use /stage <stage> sorted:True"
+        ]
         await send_embeds(description_lines, ctx)
-        session.close()
 
     @commands.command(
         aliases=["stage-records"],
@@ -668,7 +663,10 @@ class GeneralCommand(commands.Cog):
         for record in records:
             for player in record.players:
                 record_count[player.name] += 1
-        description_lines = ["Record Count"]
+        description_lines = [
+            "DEPRECATED! Please use /recordcount instead. This will be removed eventually,"
+            "Record Count"
+        ]
         for player_name, count in sorted(
             record_count.items(), key=lambda tuple: tuple[1], reverse=True
         ):

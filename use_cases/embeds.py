@@ -2,7 +2,7 @@ from typing import List
 from discord import Embed
 from discord.ext.commands.context import Context
 
-MAX_DESCRIPTION_LENGTH = 2048
+MAX_DESCRIPTION_LENGTH = 4096
 
 
 def create_embeds(lines: List[str]):
