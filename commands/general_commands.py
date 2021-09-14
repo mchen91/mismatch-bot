@@ -1,8 +1,6 @@
 # COMMANDS TO CONVERT OVER STILL:
 # chartotals
 # stagetotals (maybe combine these?)
-# wt
-# stagerecords
 
 import random
 from collections import defaultdict
@@ -457,6 +455,41 @@ class GeneralSlashCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
+    @cog_ext.cog_slash(
+        name="stagerecords",
+        description="Displays the fastest records for each stage",
+        guild_ids=GUILD_IDS,
+    )
+    async def stagerecords(self, ctx: Context):
+        from use_cases.embeds import send_embeds
+        from use_cases.frame_conversion import frames_to_time_string
+        from use_cases.records import (
+            get_25_stage_total,
+            get_fastest_stage_records,
+            get_formatted_record_string,
+        )
+
+        session = get_session()
+        records = get_fastest_stage_records(session=session)
+        description_lines = [f"Fastest Stage Records"]
+        for record in records:
+            record_string = get_formatted_record_string(record=record)
+            if record.video_link:
+                record_string = f"[{record_string}]({record.video_link})"
+            players = (
+                ",".join(player.name for player in record.players)
+                if record.players
+                else "N/A"
+            )
+            description_lines.append(
+                f"{record.character.name}/{record.stage.name} - {record_string} - {players}"
+            )
+        total_frames = get_25_stage_total(records=records)
+        description_lines.append(
+            f"25 Stage Total: {frames_to_time_string(total_frames)}"
+        )
+        await send_embeds(description_lines, ctx)
+        session.close()
 
 class GeneralCommand(commands.Cog):
     @commands.command(
@@ -504,7 +537,6 @@ class GeneralCommand(commands.Cog):
         session.close()
 
     @commands.command(
-        aliases=["character"],
         help=f"Shows records for a given character, e.g. {COMMAND_PREFIX}char yoshi",
     )
     async def char(self, ctx: Context, character_name: str):
@@ -549,7 +581,6 @@ class GeneralCommand(commands.Cog):
         session.close()
 
     @commands.command(
-        aliases=["charactersorted", "charsort"],
         help=f"Shows orderedrecords for a given character, e.g. {COMMAND_PREFIX}charsorted yoshi",
     )
     async def charsorted(self, ctx: Context, character_name: str):
@@ -558,7 +589,7 @@ class GeneralCommand(commands.Cog):
         ]
         await send_embeds(description_lines, ctx)
 
-    @commands.command(aliases=["chartotal"])
+    @commands.command()
     async def chartotals(self, ctx: Context):
         from use_cases.character import characters
         from use_cases.frame_conversion import frames_to_time_string
@@ -622,7 +653,6 @@ class GeneralCommand(commands.Cog):
         session.close()
 
     @commands.command(
-        aliases=["stagesort"],
         help=f"Shows records for a given stage sorted from fastest to slowest, e.g. {COMMAND_PREFIX}stagesorted mario",
     )
     async def stagesorted(self, ctx: Context, stage_name: str):
@@ -631,42 +661,14 @@ class GeneralCommand(commands.Cog):
         ]
         await send_embeds(description_lines, ctx)
 
-    @commands.command(
-        aliases=["stage-records"],
-        help="Shows fastest records for each stage",
-    )
+    @commands.command(help="Shows fastest records for each stage")
     async def stagerecords(self, ctx: Context):
-        from use_cases.embeds import send_embeds
-        from use_cases.frame_conversion import frames_to_time_string
-        from use_cases.records import (
-            get_25_stage_total,
-            get_fastest_stage_records,
-            get_formatted_record_string,
-        )
-
-        session = get_session()
-        records = get_fastest_stage_records(session=session)
-        description_lines = [f"Fastest Stage Records"]
-        for record in records:
-            record_string = get_formatted_record_string(record=record)
-            if record.video_link:
-                record_string = f"[{record_string}]({record.video_link})"
-            players = (
-                ",".join(player.name for player in record.players)
-                if record.players
-                else "N/A"
-            )
-            description_lines.append(
-                f"{record.character.name}/{record.stage.name} - {record_string} - {players}"
-            )
-        total_frames = get_25_stage_total(records=records)
-        description_lines.append(
-            f"25 Stage Total: {frames_to_time_string(total_frames)}"
-        )
+        description_lines = [
+            f"This command has been REMOVED. Please use /stagerecords instead"
+        ]
         await send_embeds(description_lines, ctx)
-        session.close()
 
-    @commands.command(aliases=["stagetotal"])
+    @commands.command()
     async def stagetotals(self, ctx: Context):
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.records import (
@@ -690,10 +692,7 @@ class GeneralCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-    @commands.command(
-        aliases=["worst", "worsttotal", "worst-total"],
-        help="Shows worst mismatch total",
-    )
+    @commands.command(help="Shows worst mismatch total")
     async def wt(self, ctx: Context):
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
@@ -711,9 +710,7 @@ class GeneralCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-    @commands.command(
-        aliases=["best", "besttotal", "best-total"], help="Shows best mismatch total"
-    )
+    @commands.command(help="Shows best mismatch total")
     async def bt(self, ctx: Context):
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
