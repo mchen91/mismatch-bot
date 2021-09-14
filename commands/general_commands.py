@@ -1,3 +1,9 @@
+# COMMANDS TO CONVERT OVER STILL:
+# chartotals
+# stagetotals (maybe combine these?)
+# wt
+# stagerecords
+
 import random
 from collections import defaultdict
 from decimal import Decimal
@@ -389,6 +395,68 @@ class GeneralSlashCommand(commands.Cog):
         await ctx.send(msg)
         session.close()
 
+    @cog_ext.cog_slash(
+        name="wt",
+        description="Displays the assignment of characters to stages that results in the worst total",
+        guild_ids=GUILD_IDS,
+    )
+    async def wt(self, ctx: Context):
+        from use_cases.embeds import send_embeds
+        from use_cases.frame_conversion import frames_to_time_string
+        from use_cases.total import get_worst_total_records
+
+        session = get_session()
+        records, improvements, total = get_worst_total_records(session)
+        description_lines = ["Worst Total"]
+        for (record, improvement) in zip(records, improvements):
+            record_string = f"[{frames_to_time_string(record.time)}]({record.video_link}) ➛ {frames_to_time_string(improvement)}"
+            description_lines.append(
+                f"{record.character.name}/{record.stage.name} ({record_string})"
+            )
+        description_lines.append(f"Total: {frames_to_time_string(total)}")
+        await send_embeds(description_lines, ctx)
+        session.close()
+
+    @cog_ext.cog_slash(
+        name="bt",
+        description="Displays the assignment of characters to stages that results in the best total",
+        guild_ids=GUILD_IDS,
+        options=[
+            create_option(
+                name="allow_vanilla",
+                description="Allow vanilla pairings",
+                option_type=5,
+                required=False,
+            ),
+        ],
+    )
+    async def bt(self, ctx: Context, allow_vanilla: bool = False):
+        from use_cases.embeds import send_embeds
+        from use_cases.frame_conversion import frames_to_time_string
+        from use_cases.total import (
+            get_best_total_full_mismatch_records,
+            get_best_total_records,
+        )
+
+        session = get_session()
+        records, total = (
+            get_best_total_records(session)
+            if allow_vanilla
+            else get_best_total_full_mismatch_records(session)
+        )
+        description_lines = [
+            "Best Total (Allowing Vanilla Pairings)"
+            if allow_vanilla
+            else "Best Total (Full Mismatch)"
+        ]
+        description_lines += [
+            f"{record.character.name}/{record.stage.name} - [{frames_to_time_string(record.time)}]({record.video_link}) - {','.join(player.name for player in record.players)}"
+            for record in records
+        ]
+        description_lines.append(f"Total: {frames_to_time_string(total)}")
+        await send_embeds(description_lines, ctx)
+        session.close()
+
 
 class GeneralCommand(commands.Cog):
     @commands.command(
@@ -453,7 +521,10 @@ class GeneralCommand(commands.Cog):
         session = get_session()
         character = get_character_by_name(session=session, name=character_name)
         records = get_records_by_character(session=session, character=character)
-        description_lines = [f"{character.name} Character Records"]
+        description_lines = [
+            "DEPRECATED! Please use /char instead",
+            f"{character.name} Character Records",
+        ]
         for record in records:
             record_string = get_formatted_record_string(record=record)
             if record.video_link:
@@ -483,7 +554,7 @@ class GeneralCommand(commands.Cog):
     )
     async def charsorted(self, ctx: Context, character_name: str):
         description_lines = [
-            f"This command has been REMOVED. Please use /char with sorted:True"
+            f"This command has been REMOVED. Please use /char with sorted:True instead"
         ]
         await send_embeds(description_lines, ctx)
 
@@ -527,7 +598,10 @@ class GeneralCommand(commands.Cog):
         session = get_session()
         stage = get_stage_by_name(session=session, name=stage_name)
         records = get_records_by_stage(session=session, stage=stage)
-        description_lines = [f"{stage.name} Stage Records"]
+        description_lines = [
+            "DEPRECATED! Please use /stage instead",
+            f"{stage.name} Stage Records",
+        ]
         for record in records:
             record_string = get_formatted_record_string(record=record)
             if record.video_link:
@@ -553,7 +627,7 @@ class GeneralCommand(commands.Cog):
     )
     async def stagesorted(self, ctx: Context, stage_name: str):
         description_lines = [
-            f"This command has been REMOVED. Please use /stage with sorted:True"
+            f"This command has been REMOVED. Please use /stage with sorted:True instead"
         ]
         await send_embeds(description_lines, ctx)
 
@@ -627,7 +701,7 @@ class GeneralCommand(commands.Cog):
 
         session = get_session()
         records, improvements, total = get_worst_total_records(session)
-        description_lines = []
+        description_lines = ["DEPRECATED! Please use /wt instead"]
         for (record, improvement) in zip(records, improvements):
             record_string = f"[{frames_to_time_string(record.time)}]({record.video_link}) ➛ {frames_to_time_string(improvement)}"
             description_lines.append(
@@ -648,6 +722,9 @@ class GeneralCommand(commands.Cog):
         session = get_session()
         records, total = get_best_total_records(session)
         description_lines = [
+            "DEPRECATED! Please use /bt with full_mismatch:False instead"
+        ]
+        description_lines += [
             f"{record.character.name}/{record.stage.name} - [{frames_to_time_string(record.time)}]({record.video_link}) - {','.join(player.name for player in record.players)}"
             for record in records
         ]
@@ -665,7 +742,8 @@ class GeneralCommand(commands.Cog):
 
         session = get_session()
         records, total = get_best_total_full_mismatch_records(session)
-        description_lines = [
+        description_lines = ["DEPRECATED! Please use /bt instead"]
+        description_lines += [
             f"{record.character.name}/{record.stage.name} - [{frames_to_time_string(record.time)}]({record.video_link}) - {','.join(player.name for player in record.players)}"
             for record in records
         ]
@@ -685,8 +763,7 @@ class GeneralCommand(commands.Cog):
             for player in record.players:
                 record_count[player.name] += 1
         description_lines = [
-            "DEPRECATED! Please use /recordcount instead. This will be removed eventually"
-            "Record Count"
+            "DEPRECATED! Please use /recordcount instead" "Record Count"
         ]
         for player_name, count in sorted(
             record_count.items(), key=lambda tuple: tuple[1], reverse=True
@@ -718,7 +795,7 @@ class GeneralCommand(commands.Cog):
         ]
         title = " vs. ".join(character.name for character in characters)
         description_lines = [
-            "DEPRECATED! Please use /compare instead. This will be removed eventually",
+            "DEPRECATED! Please use /compare instead",
             title,
         ]
         for records in zip(*records_MULTI):
