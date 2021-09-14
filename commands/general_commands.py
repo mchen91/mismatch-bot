@@ -1,7 +1,3 @@
-# COMMANDS TO CONVERT OVER STILL:
-# chartotals
-# stagetotals (maybe combine these?)
-
 import random
 from collections import defaultdict
 from decimal import Decimal
@@ -377,7 +373,7 @@ class GeneralSlashCommand(commands.Cog):
         description="Displays a random mismatch record",
         guild_ids=GUILD_IDS,
     )
-    async def random_(self, ctx: Context):
+    async def random(self, ctx: Context):
         from use_cases.records import (
             get_all_complete_records,
             get_formatted_record_string,
@@ -491,6 +487,112 @@ class GeneralSlashCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
+    @cog_ext.cog_slash(
+        name="totals",
+        description="List either char or stage totals",
+        guild_ids=GUILD_IDS,
+        options=[
+            create_option(
+                name="mode",
+                description="Choose between totals for each character or for each stage",
+                option_type=3,
+                required=True,
+                choices=[
+                    create_choice(
+                        name="character totals",
+                        value="character",
+                    ),
+                    create_choice(
+                        name="stage totals",
+                        value="stage",
+                    ),
+                ],
+            ),
+            create_option(
+                name="sorted",
+                description="Order by fastest to slowest",
+                option_type=5,
+                required=False,
+            ),
+        ],
+        connector={
+            "sorted": "is_sorted",
+        },
+    )
+    async def totals(self, ctx: Context, mode: str, is_sorted: bool = False):
+        if mode == "character":
+            await self._chartotals(ctx, is_sorted)
+        elif mode == "stage":
+            await self._stagetotals(ctx, is_sorted)
+
+    async def _chartotals(self, ctx: Context, is_sorted: bool):
+        from use_cases.character import characters
+        from use_cases.frame_conversion import frames_to_time_string
+        from use_cases.records import (
+            get_25_stage_total,
+            get_records_by_character,
+            get_total,
+        )
+
+        session = get_session()
+        description_lines = [
+            f"25 Stage Totals for each Character{' (sorted)' if is_sorted else ''}"
+        ]
+        grand_total = 0
+        char_to_total_tuples = []
+        for character in characters(session=session):
+            records = get_records_by_character(session=session, character=character)
+            frames_25_stages = get_25_stage_total(records=records)
+            char_to_total_tuples.append((character, frames_25_stages))
+            grand_total += get_total(records=records)
+        if is_sorted:
+            char_to_total_tuples = sorted(
+                char_to_total_tuples,
+                key=lambda tup: tup[1],
+            )
+        for character, total in char_to_total_tuples:
+            description_lines.append(
+                f"{character.name} - {frames_to_time_string(total)}"
+            )
+        description_lines.append(f"Grand Total: {frames_to_time_string(grand_total)}")
+        await send_embeds(description_lines, ctx)
+        session.close()
+
+    async def _stagetotals(self, ctx: Context, is_sorted: bool):
+        from use_cases.frame_conversion import frames_to_time_string
+        from use_cases.records import (
+            get_25_character_total,
+            get_records_by_stage,
+            get_total,
+        )
+        from use_cases.stage import stages
+
+        session = get_session()
+        description_lines = [
+            f"25 Character Totals for each Stage{' (sorted)' if is_sorted else ''}"
+        ]
+        grand_total = 0
+        stage_to_total_tuples = []
+        for stage in stages(session=session):
+            records = get_records_by_stage(session=session, stage=stage)
+            frames_25_stages = get_25_character_total(records=records)
+            stage_to_total_tuples.append((stage, frames_25_stages))
+            grand_total += get_total(records=records)
+
+        if is_sorted:
+            stage_to_total_tuples = sorted(
+                stage_to_total_tuples,
+                key=lambda tup: tup[1],
+            )
+        for stage, frames_25_stages in stage_to_total_tuples:
+            description_lines.append(
+                f"{stage.name} - {frames_to_time_string(frames_25_stages)}"
+            )
+        description_lines.append(f"Grand Total: {frames_to_time_string(grand_total)}")
+        await send_embeds(description_lines, ctx)
+        session.close()
+
+
 class GeneralCommand(commands.Cog):
     @commands.command(
         help=f"Shows current record, e.g. {COMMAND_PREFIX}wr younglink/samus"
@@ -589,30 +691,6 @@ class GeneralCommand(commands.Cog):
         ]
         await send_embeds(description_lines, ctx)
 
-    @commands.command()
-    async def chartotals(self, ctx: Context):
-        from use_cases.character import characters
-        from use_cases.frame_conversion import frames_to_time_string
-        from use_cases.records import (
-            get_25_stage_total,
-            get_records_by_character,
-            get_total,
-        )
-
-        session = get_session()
-        description_lines = [f"25 Stage Totals for each Character"]
-        grand_total = 0
-        for character in characters(session=session):
-            records = get_records_by_character(session=session, character=character)
-            frames_25_stages = get_25_stage_total(records=records)
-            grand_total += get_total(records=records)
-            description_lines.append(
-                f"{character.name} - {frames_to_time_string(frames_25_stages)}"
-            )
-        description_lines.append(f"Grand Total: {frames_to_time_string(grand_total)}")
-        await send_embeds(description_lines, ctx)
-        session.close()
-
     @commands.command(
         help=f"Shows records for a given stage, e.g. {COMMAND_PREFIX}stage mario",
     )
@@ -667,30 +745,6 @@ class GeneralCommand(commands.Cog):
             f"This command has been REMOVED. Please use /stagerecords instead"
         ]
         await send_embeds(description_lines, ctx)
-
-    @commands.command()
-    async def stagetotals(self, ctx: Context):
-        from use_cases.frame_conversion import frames_to_time_string
-        from use_cases.records import (
-            get_25_character_total,
-            get_records_by_stage,
-            get_total,
-        )
-        from use_cases.stage import stages
-
-        session = get_session()
-        description_lines = [f"25 Character Totals for each Stage"]
-        grand_total = 0
-        for stage in stages(session=session):
-            records = get_records_by_stage(session=session, stage=stage)
-            frames_25_stages = get_25_character_total(records=records)
-            grand_total += get_total(records=records)
-            description_lines.append(
-                f"{stage.name} - {frames_to_time_string(frames_25_stages)}"
-            )
-        description_lines.append(f"Grand Total: {frames_to_time_string(grand_total)}")
-        await send_embeds(description_lines, ctx)
-        session.close()
 
     @commands.command(help="Shows worst mismatch total")
     async def wt(self, ctx: Context):
@@ -825,6 +879,6 @@ class GeneralCommand(commands.Cog):
         session.close()
 
     @commands.command(name="random")
-    async def random_(self, ctx: Context):
+    async def random(self, ctx: Context):
         description_lines = [f"This command has been REMOVED. Please use /random"]
         await send_embeds(description_lines, ctx)
