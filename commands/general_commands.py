@@ -27,7 +27,7 @@ class GeneralSlashCommand(commands.Cog):
             ),
             create_option(
                 name="stage",
-                description="Choose a stage for the WR. Defaults to the character",
+                description="Choose a stage for the WR (default: the same character)",
                 option_type=3,
                 required=False,
                 # limited to 25 choices - we have 26 stages
@@ -152,7 +152,7 @@ class GeneralSlashCommand(commands.Cog):
             ),
             create_option(
                 name="sorted",
-                description="Order by fastest to slowest",
+                description="Order by fastest to slowest (default: False)",
                 option_type=5,
                 required=False,
                 # limited to 25 choices - we have 26 stages
@@ -213,7 +213,7 @@ class GeneralSlashCommand(commands.Cog):
         options=[
             create_option(
                 name="mode",
-                description="Optionally choose between mismatch only, vanilla only, or all records (default all)",
+                description="Optionally choose between mismatch only, vanilla only, or all records (default: all)",
                 option_type=3,
                 choices=[
                     create_choice(
@@ -417,7 +417,7 @@ class GeneralSlashCommand(commands.Cog):
         options=[
             create_option(
                 name="allow_vanilla",
-                description="Allow vanilla pairings",
+                description="Allow vanilla pairings (default: False)",
                 option_type=5,
                 required=False,
             ),
@@ -509,7 +509,7 @@ class GeneralSlashCommand(commands.Cog):
             ),
             create_option(
                 name="sorted",
-                description="Order by fastest to slowest",
+                description="Order by fastest to slowest (default: False)",
                 option_type=5,
                 required=False,
             ),
