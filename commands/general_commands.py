@@ -1,6 +1,5 @@
 import random
 from collections import defaultdict
-from decimal import Decimal
 from use_cases.embeds import send_embeds
 
 from discord.ext import commands
