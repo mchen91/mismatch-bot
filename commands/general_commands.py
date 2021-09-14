@@ -354,7 +354,7 @@ class GeneralSlashCommand(commands.Cog):
             frames_to_time_string(frames) for frames in frames_23_stages_MULTI
         ]
         description_lines.append(
-            f"23 Stage Total: {'/'.join(time_strings_23_stages_MULTI)}"
+            f"23 Stage Total: {' vs. '.join(time_strings_23_stages_MULTI)}"
         )
         frames_25_stages_MULTI = [
             get_25_stage_total(records=records) for records in records_MULTI
@@ -632,8 +632,7 @@ class GeneralCommand(commands.Cog):
         session.close()
 
     @commands.command(
-        aliases=["bestfm", "besttotalfullmismatch", "bestful"],
-        help="Shows best total with full mismatch (no vanilla char/stage pairings)",
+        help="Shows best total with full mismatch (no vanilla char/stage pairings)"
     )
     async def btfm(self, ctx: Context):
         from use_cases.embeds import send_embeds
@@ -650,9 +649,7 @@ class GeneralCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-    @commands.command(
-        aliases=["record-count"], help="Shows number of records for each player"
-    )
+    @commands.command(help="Shows number of records for each player")
     async def recordcount(self, ctx: Context):
         from use_cases.embeds import send_embeds
         from use_cases.records import get_all_records
@@ -664,7 +661,7 @@ class GeneralCommand(commands.Cog):
             for player in record.players:
                 record_count[player.name] += 1
         description_lines = [
-            "DEPRECATED! Please use /recordcount instead. This will be removed eventually,"
+            "DEPRECATED! Please use /recordcount instead. This will be removed eventually"
             "Record Count"
         ]
         for player_name, count in sorted(
@@ -696,18 +693,14 @@ class GeneralCommand(commands.Cog):
             for character in characters
         ]
         title = " vs. ".join(character.name for character in characters)
-        description_lines = [title]
+        description_lines = [
+            "DEPRECATED! Please use /compare <character1> <character2> instead. This will be removed eventually",
+            title,
+        ]
         for records in zip(*records_MULTI):
             record_string_MULTI = [
                 get_formatted_record_string(record=record) for record in records
             ]
-            # if record.video_link:
-            #     record_string = f"[{record_string}]({record.video_link})"
-            # players = (
-            #     ",".join(player.name for player in record.players)
-            #     if record.players
-            #     else "N/A"
-            # )
             joined_record_string = "/".join(record_string_MULTI)
             description_lines.append(
                 f"{records[0].stage.name} - {joined_record_string}"
