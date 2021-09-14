@@ -368,6 +368,27 @@ class GeneralSlashCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
+    @cog_ext.cog_slash(
+        name="random",
+        description="Displays a random mismatch record",
+        guild_ids=GUILD_IDS,
+    )
+    async def random_(self, ctx: Context):
+        from use_cases.records import (
+            get_all_complete_records,
+            get_formatted_record_string,
+        )
+
+        session = get_session()
+        complete_records = get_all_complete_records(session=session)
+        record = random.choice(complete_records)
+        players_string = ",".join(player.name for player in record.players)
+        record_value = get_formatted_record_string(record=record)
+        video_link_string = f"at {record.video_link}"
+        msg = f"{record.character.name}/{record.stage.name} - {record_value} by {players_string} {video_link_string}"
+        await ctx.send(msg)
+        session.close()
+
 
 class GeneralCommand(commands.Cog):
     @commands.command(
@@ -405,7 +426,10 @@ class GeneralCommand(commands.Cog):
             )
             video_link_string = f"at {record.video_link}" if record.video_link else ""
             record_value = get_formatted_record_string(record=record)
-            msg = f"{record.character.name}/{record.stage.name} - {record_value} by {players_string} {video_link_string}"
+            msg = (
+                "DEPRECATED! Please use /wr instead. This will be removed eventually\n",
+            )
+            msg += f"{record.character.name}/{record.stage.name} - {record_value} by {players_string} {video_link_string}"
         else:
             msg = f"No record found for {character.name}/{stage.name}"
         await ctx.send(msg)
@@ -459,7 +483,7 @@ class GeneralCommand(commands.Cog):
     )
     async def charsorted(self, ctx: Context, character_name: str):
         description_lines = [
-            f"This command has been REMOVED. Please use /char <character> sorted:True"
+            f"This command has been REMOVED. Please use /char with sorted:True"
         ]
         await send_embeds(description_lines, ctx)
 
@@ -529,7 +553,7 @@ class GeneralCommand(commands.Cog):
     )
     async def stagesorted(self, ctx: Context, stage_name: str):
         description_lines = [
-            f"This command has been REMOVED. Please use /stage <stage> sorted:True"
+            f"This command has been REMOVED. Please use /stage with sorted:True"
         ]
         await send_embeds(description_lines, ctx)
 
@@ -694,7 +718,7 @@ class GeneralCommand(commands.Cog):
         ]
         title = " vs. ".join(character.name for character in characters)
         description_lines = [
-            "DEPRECATED! Please use /compare <character1> <character2> instead. This will be removed eventually",
+            "DEPRECATED! Please use /compare instead. This will be removed eventually",
             title,
         ]
         for records in zip(*records_MULTI):
@@ -728,70 +752,5 @@ class GeneralCommand(commands.Cog):
 
     @commands.command(name="random")
     async def random_(self, ctx: Context):
-        from use_cases.records import (
-            get_all_complete_records,
-            get_formatted_record_string,
-        )
-
-        session = get_session()
-        complete_records = get_all_complete_records(session=session)
-        record = random.choice(complete_records)
-        players_string = ",".join(player.name for player in record.players)
-        record_value = get_formatted_record_string(record=record)
-        video_link_string = f"at {record.video_link}"
-        msg = f"{record.character.name}/{record.stage.name} - {record_value} by {players_string} {video_link_string}"
-        await ctx.send(msg)
-        session.close()
-
-    ### TEMP TEMP TEMP
-    @commands.command(aliases=["inspireme"], help="Generates a TTRC3 claim")
-    async def claim(self, ctx: Context, char_name: str = None):
-        from use_cases.character import get_character_by_position, get_character_by_name
-
-        session = get_session()
-        claims = [
-            Decimal(str(t))
-            for t in [
-                7,
-                9,
-                8,
-                10,
-                7,
-                10,
-                10,
-                10,
-                6,
-                7,
-                3.7,
-                12,
-                15,
-                11,
-                7,
-                5,
-                7,
-                8,
-                7,
-                7,
-                11,
-                7,
-                6,
-                5,
-                3,
-            ]
-        ]
-        if char_name:
-            character = get_character_by_name(session=session, name=char_name)
-            claim = claims[character.position]
-        else:
-            random_character_position = random.randint(0, 24)
-            character = get_character_by_position(
-                session=session, position=random_character_position
-            )
-            claim = claims[random_character_position]
-        random_sub_amount = random.choice(
-            [Decimal(str(t)) for t in [0.5, 1, 1.5, 2, 2.5, 3]]
-        )
-        claimed_sub = claim - random_sub_amount
-
-        await ctx.send(f"Sub {claimed_sub} {character.name}")
-        session.close()
+        description_lines = [f"This command has been REMOVED. Please use /random"]
+        await send_embeds(description_lines, ctx)
