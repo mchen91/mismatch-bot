@@ -11,13 +11,6 @@ from db import get_session
 MY_ID = 97904188918345728
 
 
-def is_me():
-    def predicate(ctx: Context):
-        return ctx.message.author.id == MY_ID
-
-    return commands.check(predicate)
-
-
 class OwnerSlashCommand(commands.Cog):
     @cog_ext.cog_slash(
         name="add-wr",
@@ -90,8 +83,9 @@ class OwnerSlashCommand(commands.Cog):
             get_formatted_record_string,
             get_record,
             get_records_by_character,
-            # get_records_by_stage,
+            get_records_by_stage,
             get_23_stage_total,
+            get_25_character_total,
             get_25_stage_total,
         )
         from use_cases.stage import get_stage_by_name
@@ -134,8 +128,8 @@ class OwnerSlashCommand(commands.Cog):
         prev_record_string = get_formatted_record_string(record=prev_record)
         prev_frames_23_stages = get_23_stage_total(records=records)
         prev_frames_25_stages = get_25_stage_total(records=records)
-        # prev_stage_records = get_records_by_stage(session=session, stage=stage)
-        # prev_stage_total = get_25_stage_total(records=prev_stage_records)
+        prev_records_for_stage = get_records_by_stage(session=session, stage=stage)
+        prev_25_char_total = get_25_character_total(records=prev_records_for_stage)
         # prev_worst_total_records = get_worst_total_records(session)
         # prev_best_total = get_best_total_records(session)
         # prev_best_total_full_mismatch = get_best_total_full_mismatch_records(session)
@@ -161,23 +155,23 @@ class OwnerSlashCommand(commands.Cog):
                 prev_23_total = frames_to_time_string(prev_frames_23_stages)
                 new_23_total = frames_to_time_string(new_frames_23_stages)
                 description_lines.append(
-                    f"23 Stage total improved from {prev_23_total} to {new_23_total}"
+                    f"23 Stage total ({stage.name}) improved from {prev_23_total} to {new_23_total}"
                 )
             new_frames_25_stages = get_25_stage_total(records=new_records)
             if new_frames_25_stages < prev_frames_25_stages:
                 prev_25_total = frames_to_time_string(prev_frames_25_stages)
                 new_25_total = frames_to_time_string(new_frames_25_stages)
                 description_lines.append(
-                    f"25 Stage total improved from {prev_25_total} to {new_25_total}"
+                    f"25 Stage total ({stage.name}) improved from {prev_25_total} to {new_25_total}"
                 )
-            # new_stage_records = get_records_by_stage(session=session, stage=stage)
-            # new_stage_total = get_25_stage_total(records=new_stage_records)
-            # if new_stage_total < prev_stage_total:
-            #     prev_stage_total_string = frames_to_time_string(prev_stage_total)
-            #     new_stage_total_string = frames_to_time_string(new_stage_total)
-            #     description_lines.append(
-            #         f"{stage.name} stage total improved from {prev_25_total} to {new_25_total}"
-            #     )
+            new_stage_records = get_records_by_stage(session=session, stage=stage)
+            new_stage_total = get_25_character_total(records=new_stage_records)
+            if new_stage_total < prev_25_char_total:
+                prev_stage_total_string = frames_to_time_string(prev_25_char_total)
+                new_stage_total_string = frames_to_time_string(new_stage_total)
+                description_lines.append(
+                    f"25 Character total ({character.name}) improved from {prev_stage_total_string} to {new_stage_total_string}"
+                )
             # new_worst_total = get_worst_total_records(session)
             # new_best_total = get_best_total_records(session)
             # new_best_total_full_mismatch = get_best_total_full_mismatch_records(session)
