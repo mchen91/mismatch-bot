@@ -39,6 +39,7 @@ def add_record(
             elif time:
                 record.partial_targets = None
                 record.time = time
+                record.video_link = video_link
         else:
             if record.time == time:
                 record.players.append(player)
