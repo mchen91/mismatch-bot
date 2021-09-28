@@ -294,7 +294,7 @@ class GeneralSlashCommand(commands.Cog):
             create_option(
                 name="character1",
                 description="First character to compare",
-                option_type=3,
+                option_type=str,
                 required=True,
             ),
             create_option(
@@ -303,20 +303,39 @@ class GeneralSlashCommand(commands.Cog):
                 option_type=3,
                 required=True,
             ),
+            create_option(
+                name="sort_by",
+                description="Optionally choose how to sort the results",
+                option_type=str,
+                choices=[
+                    create_choice(
+                        name="Stage (default)",
+                        value="stage",
+                    ),
+                    create_choice(
+                        name="Delta",
+                        value="delta",
+                    ),
+                ],
+                required=False,
+            ),
         ],
     )
-    async def compare(self, ctx: Context, **kwargs: str):
+    async def compare(
+        self, ctx: Context, character1: str, character2: str, sort_by: str = "stage"
+    ):
         from use_cases.character import get_character_by_name
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.records import (
+            compare_record_pair,
             get_23_stage_total,
             get_25_stage_total,
             get_formatted_record_string,
             get_records_by_character,
         )
 
-        char_names = [kwargs["character1"], kwargs["character2"]]
+        char_names = [character1, character2]
 
         session = get_session()
         characters = [
@@ -327,9 +346,17 @@ class GeneralSlashCommand(commands.Cog):
             get_records_by_character(session=session, character=character)
             for character in characters
         ]
-        title = " vs. ".join(character.name for character in characters)
+        records_zipped = zip(*records_MULTI)
+        if sort_by == "delta":
+            records_zipped = sorted(
+                records_zipped,
+                key=compare_record_pair,
+            )
+        title_vs = " vs. ".join(character.name for character in characters)
+        title_sort = " (sorted by Delta)" if sort_by == "delta" else ""
+        title = f"{title_vs}{title_sort}"
         description_lines = [title]
-        for records in zip(*records_MULTI):
+        for records in records_zipped:
             record_string_MULTI = [
                 get_formatted_record_string(record=record) for record in records
             ]
@@ -812,7 +839,8 @@ class GeneralCommand(commands.Cog):
             for player in record.players:
                 record_count[player.name] += 1
         description_lines = [
-            "DEPRECATED! Please use /recordcount instead" "Record Count"
+            "DEPRECATED! Please use /recordcount instead",
+            "Record Count",
         ]
         for player_name, count in sorted(
             record_count.items(), key=lambda tuple: tuple[1], reverse=True

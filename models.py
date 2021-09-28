@@ -72,7 +72,12 @@ class Record(Base):
     )
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}({self.character.name}/{self.stage.name} ({self.time}))>"
+        record = self.time or f"{self.partial_targets} targets"
+        return f"<{self.__class__.__name__}({self.character.name}/{self.stage.name} ({record}))>"
+
+    @property
+    def is_complete(self):
+        return self.time is not None
 
 
 class CharacterStageAlias(Base):

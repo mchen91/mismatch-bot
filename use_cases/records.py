@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from sqlalchemy.orm import contains_eager
 from sqlalchemy.orm.session import Session
 
@@ -177,3 +177,36 @@ def is_vanilla_record(record: Record):
         and record.character.position < 25
         and record.stage.position < 25
     )
+
+
+"""
+SMALL NUMBER = RECORD1 WINS
+1. record1 is complete, record2 is partial
+    - sort ties by record2 targets
+    - sort further times by record1 time
+2. record1 and record2 are partial
+    - sort ties by record1 targets
+3. record1 and record2 are complete
+    - sort ties by record1 time
+4. record1 is partial, record2 is complete
+    - sort ties by record1 targets
+    - sort further ties by record2 time
+"""
+
+
+def compare_record_pair(record_pair: Tuple[Record, Record]):
+    record1, record2 = record_pair
+    if record1.is_complete and not record2.is_complete:
+        return -1000000 * (10 - record2.partial_targets) + record1.time
+    if not record1.is_complete and not record2.is_complete:
+        value = 1000 * (record2.partial_targets - record1.partial_targets)
+        if value == 0:
+            value += record1.partial_targets
+        return value
+    if record1.is_complete and record2.is_complete:
+        value = record1.time - record2.time
+        if value == 0:
+            value += record1.time / 1000.0
+        return value
+    if not record1.is_complete and record2.is_complete:
+        return 1000000 * (10 - record1.partial_targets) - record2.time
