@@ -369,8 +369,13 @@ class GeneralSlashCommand(commands.Cog):
             ]
             # record_string_with_video_MULTI: ["[9.90"]
             joined_record_string = " vs. ".join(record_string_with_video_MULTI)
+            delta = (
+                f" ({records[0].time - records[1].time} frames)"
+                if records[0].is_complete and records[1].is_complete
+                else ""
+            )
             description_lines.append(
-                f"{records[0].stage.name} - {joined_record_string}"
+                f"{records[0].stage.name} - {joined_record_string}{delta}"
             )
         frames_23_stages_MULTI = [
             get_23_stage_total(records=records) for records in records_MULTI
