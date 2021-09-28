@@ -47,7 +47,6 @@ class GeneralSlashCommand(commands.Cog):
         session = get_session()
         character = get_character_by_name(session=session, name=character_name)
 
-        stage_name = stage_name or character_name
         stage = get_stage_by_name(session=session, name=stage_name)
         record = get_record(session=session, character=character, stage=stage)
 
