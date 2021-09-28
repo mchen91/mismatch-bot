@@ -20,16 +20,16 @@ class GeneralSlashCommand(commands.Cog):
             create_option(
                 name="character",
                 description="Choose a character for the WR",
-                option_type=3,
+                option_type=str,
                 required=True,
                 # limited to 25 choices - we have 32 characters
                 # choices=[create_choice(name=char, value=char) for char in CHARACTERS],
             ),
             create_option(
                 name="stage",
-                description="Choose a stage for the WR (default: the same character)",
-                option_type=3,
-                required=False,
+                description="Choose a stage for the WR",
+                option_type=str,
+                required=True,
                 # limited to 25 choices - we have 26 stages
                 # choices=[create_choice(name=stage, value=stage) for stage in STAGES],
             ),
@@ -39,7 +39,7 @@ class GeneralSlashCommand(commands.Cog):
             "stage": "stage_name",
         },
     )
-    async def wr(self, ctx: SlashContext, character_name: str, stage_name: str = None):
+    async def wr(self, ctx: SlashContext, character_name: str, stage_name: str):
         from use_cases.character import get_character_by_name
         from use_cases.records import get_record, get_formatted_record_string
         from use_cases.stage import get_stage_by_name
