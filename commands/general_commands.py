@@ -216,16 +216,16 @@ class GeneralSlashCommand(commands.Cog):
                 option_type=3,
                 choices=[
                     create_choice(
+                        name="All (default)",
+                        value="all",
+                    ),
+                    create_choice(
                         name="Mismatch only",
                         value="mismatch-only",
                     ),
                     create_choice(
                         name="Vanilla only",
                         value="vanilla-only",
-                    ),
-                    create_choice(
-                        name="All",
-                        value="all",
                     ),
                 ],
                 required=False,
