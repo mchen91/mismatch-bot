@@ -625,50 +625,6 @@ class GeneralSlashCommand(commands.Cog):
 
 class GeneralCommand(commands.Cog):
     @commands.command(
-        help=f"Shows current record, e.g. {COMMAND_PREFIX}wr younglink/samus"
-    )
-    async def wr(self, ctx: Context, char_and_stage: str):
-        from use_cases.character import get_character_by_name
-        from use_cases.records import get_record, get_formatted_record_string
-        from use_cases.stage import get_stage_by_name
-
-        combo_array = char_and_stage.split("/")
-        if len(combo_array) != 2:
-            await ctx.send(
-                f"syntax: {COMMAND_PREFIX}wr <char>/<stage>. e.g. `{COMMAND_PREFIX}wr younglink/samus`"
-            )
-            return
-        character_name, stage_name = [s.strip() for s in combo_array]
-
-        session = get_session()
-        try:
-            character = get_character_by_name(session=session, name=character_name)
-        except ValueError as error:
-            await ctx.send(str(error))
-            return
-        try:
-            stage = get_stage_by_name(session=session, name=stage_name)
-        except ValueError as error:
-            await ctx.send(str(error))
-            return
-        record = get_record(session=session, character=character, stage=stage)
-
-        if record:
-            players_string = (
-                ",".join(player.name for player in record.players) or "Anonymous"
-            )
-            video_link_string = f"at {record.video_link}" if record.video_link else ""
-            record_value = get_formatted_record_string(record=record)
-            msg = (
-                "DEPRECATED! Please use /wr instead. This will be removed eventually\n",
-            )
-            msg += f"{record.character.name}/{record.stage.name} - {record_value} by {players_string} {video_link_string}"
-        else:
-            msg = f"No record found for {character.name}/{stage.name}"
-        await ctx.send(msg)
-        session.close()
-
-    @commands.command(
         help=f"Shows records for a given character, e.g. {COMMAND_PREFIX}char yoshi",
     )
     async def char(self, ctx: Context, character_name: str):
@@ -713,15 +669,6 @@ class GeneralCommand(commands.Cog):
         session.close()
 
     @commands.command(
-        help=f"Shows orderedrecords for a given character, e.g. {COMMAND_PREFIX}charsorted yoshi",
-    )
-    async def charsorted(self, ctx: Context, character_name: str):
-        description_lines = [
-            f"This command has been REMOVED. Please use /char with sorted:True instead"
-        ]
-        await send_embeds(description_lines, ctx)
-
-    @commands.command(
         help=f"Shows records for a given stage, e.g. {COMMAND_PREFIX}stage mario",
     )
     async def stage(self, ctx: Context, stage_name: str):
@@ -757,100 +704,6 @@ class GeneralCommand(commands.Cog):
         description_lines.append(
             f"25 Character Total: {frames_to_time_string(total_frames)}"
         )
-        await send_embeds(description_lines, ctx)
-        session.close()
-
-    @commands.command(
-        help=f"Shows records for a given stage sorted from fastest to slowest, e.g. {COMMAND_PREFIX}stagesorted mario",
-    )
-    async def stagesorted(self, ctx: Context, stage_name: str):
-        description_lines = [
-            f"This command has been REMOVED. Please use /stage with sorted:True instead"
-        ]
-        await send_embeds(description_lines, ctx)
-
-    @commands.command(help="Shows fastest records for each stage")
-    async def stagerecords(self, ctx: Context):
-        description_lines = [
-            f"This command has been REMOVED. Please use /stagerecords instead"
-        ]
-        await send_embeds(description_lines, ctx)
-
-    @commands.command(help="Shows worst mismatch total")
-    async def wt(self, ctx: Context):
-        from use_cases.embeds import send_embeds
-        from use_cases.frame_conversion import frames_to_time_string
-        from use_cases.total import get_worst_total_records
-
-        session = get_session()
-        records, improvements, total = get_worst_total_records(session)
-        description_lines = ["DEPRECATED! Please use /wt instead"]
-        for (record, improvement) in zip(records, improvements):
-            record_string = f"[{frames_to_time_string(record.time)}]({record.video_link}) ➛ {frames_to_time_string(improvement)}"
-            description_lines.append(
-                f"{record.character.name}/{record.stage.name} ({record_string})"
-            )
-        description_lines.append(f"Total: {frames_to_time_string(total)}")
-        await send_embeds(description_lines, ctx)
-        session.close()
-
-    @commands.command(help="Shows best mismatch total")
-    async def bt(self, ctx: Context):
-        from use_cases.embeds import send_embeds
-        from use_cases.frame_conversion import frames_to_time_string
-        from use_cases.total import get_best_total_records
-
-        session = get_session()
-        records, total = get_best_total_records(session)
-        description_lines = [
-            "DEPRECATED! Please use /bt with full_mismatch:False instead"
-        ]
-        description_lines += [
-            f"{record.character.name}/{record.stage.name} - [{frames_to_time_string(record.time)}]({record.video_link}) - {','.join(player.name for player in record.players)}"
-            for record in records
-        ]
-        description_lines.append(f"Total: {frames_to_time_string(total)}")
-        await send_embeds(description_lines, ctx)
-        session.close()
-
-    @commands.command(
-        help="Shows best total with full mismatch (no vanilla char/stage pairings)"
-    )
-    async def btfm(self, ctx: Context):
-        from use_cases.embeds import send_embeds
-        from use_cases.frame_conversion import frames_to_time_string
-        from use_cases.total import get_best_total_full_mismatch_records
-
-        session = get_session()
-        records, total = get_best_total_full_mismatch_records(session)
-        description_lines = ["DEPRECATED! Please use /bt instead"]
-        description_lines += [
-            f"{record.character.name}/{record.stage.name} - [{frames_to_time_string(record.time)}]({record.video_link}) - {','.join(player.name for player in record.players)}"
-            for record in records
-        ]
-        description_lines.append(f"Total: {frames_to_time_string(total)}")
-        await send_embeds(description_lines, ctx)
-        session.close()
-
-    @commands.command(help="Shows number of records for each player")
-    async def recordcount(self, ctx: Context):
-        from use_cases.embeds import send_embeds
-        from use_cases.records import get_all_records
-
-        session = get_session()
-        records = get_all_records(session=session)
-        record_count = defaultdict(int)
-        for record in records:
-            for player in record.players:
-                record_count[player.name] += 1
-        description_lines = [
-            "DEPRECATED! Please use /recordcount instead",
-            "Record Count",
-        ]
-        for player_name, count in sorted(
-            record_count.items(), key=lambda tuple: tuple[1], reverse=True
-        ):
-            description_lines.append(f"{player_name} - {count}")
         await send_embeds(description_lines, ctx)
         session.close()
 
@@ -908,8 +761,3 @@ class GeneralCommand(commands.Cog):
         )
         await send_embeds(description_lines, ctx)
         session.close()
-
-    @commands.command(name="random")
-    async def random(self, ctx: Context):
-        description_lines = [f"This command has been REMOVED. Please use /random"]
-        await send_embeds(description_lines, ctx)
