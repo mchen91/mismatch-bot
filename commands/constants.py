@@ -1,7 +1,5 @@
 import os
 
-COMMAND_PREFIX = "-mm "
-
 CHARACTERS = [
     "Dr. Mario",
     "Mario",
