@@ -529,8 +529,12 @@ class GeneralSlashCommand(commands.Cog):
                 required=True,
                 choices=[
                     create_choice(
-                        name="character totals",
-                        value="character",
+                        name="character totals (25 stage)",
+                        value="character25",
+                    ),
+                    create_choice(
+                        name="character totals (23 stage)",
+                        value="character23",
                     ),
                     create_choice(
                         name="stage totals",
@@ -550,12 +554,14 @@ class GeneralSlashCommand(commands.Cog):
         },
     )
     async def totals(self, ctx: Context, mode: str, is_sorted: bool = False):
-        if mode == "character":
-            await self._chartotals(ctx, is_sorted)
+        if mode == "character25":
+            await self._chartotals25(ctx, is_sorted)
+        if mode == "character23":
+            await self._chartotals23(ctx, is_sorted)
         elif mode == "stage":
             await self._stagetotals(ctx, is_sorted)
 
-    async def _chartotals(self, ctx: Context, is_sorted: bool):
+    async def _chartotals25(self, ctx: Context, is_sorted: bool):
         from use_cases.character import characters
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.records import (
@@ -575,6 +581,42 @@ class GeneralSlashCommand(commands.Cog):
             frames_25_stages = get_25_stage_total(records=records)
             char_to_total_tuples.append((character, frames_25_stages))
             grand_total += get_total(records=records)
+        if is_sorted:
+            char_to_total_tuples = sorted(
+                char_to_total_tuples,
+                key=lambda tup: tup[1],
+            )
+        for character, total in char_to_total_tuples:
+            description_lines.append(
+                f"{character.name} - {frames_to_time_string(total)}"
+            )
+        description_lines.append(f"Grand Total: {frames_to_time_string(grand_total)}")
+        await send_embeds(description_lines, ctx)
+        session.close()
+
+    async def _chartotals23(self, ctx: Context, is_sorted: bool):
+        from use_cases.character import characters
+        from use_cases.frame_conversion import frames_to_time_string
+        from use_cases.records import (
+            get_23_stage_total,
+            get_records_by_character,
+            get_total,
+        )
+
+        session = get_session()
+        description_lines = [
+            f"23 Stage Totals for each Character{' (sorted)' if is_sorted else ''}"
+        ]
+        grand_total = 0
+        char_to_total_tuples = []
+        for character in characters(session=session):
+            records = get_records_by_character(session=session, character=character)
+            records_23 = [
+                record for record in records if record.stage.position not in [17, 20]
+            ]
+            frames_23_stages = get_23_stage_total(records=records_23)
+            char_to_total_tuples.append((character, frames_23_stages))
+            grand_total += get_total(records=records_23)
         if is_sorted:
             char_to_total_tuples = sorted(
                 char_to_total_tuples,

@@ -8,7 +8,7 @@ from commands.general_commands import GeneralSlashCommand
 from commands.owner_commands import OwnerSlashCommand
 
 
-bot = commands.Bot(command_prefix='-lol')
+bot = commands.Bot(command_prefix="-lol")
 SlashCommand(bot, sync_commands=True)
 
 
