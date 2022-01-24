@@ -683,8 +683,11 @@ class GeneralSlashCommand(commands.Cog):
 
         session = get_session()
         records, total = get_random_total(session=session, allow_vanilla=allow_vanilla)
-
-        description_lines = ["Random Total"]
+        description_lines = [
+            "Random Total (Allowing Vanilla Pairings)"
+            if allow_vanilla
+            else "Random Total (Full Mismatch)"
+        ]
         description_lines += [
             f"{record.character.name}/{record.stage.name} - [{frames_to_time_string(record.time)}]({record.video_link}) - {','.join(player.name for player in record.players)}"
             for record in records
