@@ -134,11 +134,13 @@ def get_best_total_full_mismatch_records(session: Session):
     return best_records, total
 
 
-def get_random_total(session: Session):
+def get_random_total(session: Session, allow_vanilla: bool):
     records_main_cast = _get_main_cast_records(session)
     records_by_stage: DefaultDict[int, List[Record]] = defaultdict(list)
     for record in records_main_cast:
         if record.time is not None:
+            if not allow_vanilla and record.character.position == record.stage.position:
+                continue
             records_by_stage[record.stage.position].append(record)
     assigned_character_positions: Set[int] = set()
     stage_pick_order = [

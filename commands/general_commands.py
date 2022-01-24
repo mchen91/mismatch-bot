@@ -668,13 +668,21 @@ class GeneralSlashCommand(commands.Cog):
         name="randtotal",
         description="Displays a randomly assigned mismatch total",
         guild_ids=GUILD_IDS,
+        options=[
+            create_option(
+                name="allow_vanilla",
+                description="Allow vanilla pairings (default: False)",
+                option_type=5,
+                required=False,
+            ),
+        ],
     )
-    async def rand_total(self, ctx: Context):
+    async def rand_total(self, ctx: Context, allow_vanilla: bool = False):
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.total import get_random_total
 
         session = get_session()
-        records, total = get_random_total(session=session)
+        records, total = get_random_total(session=session, allow_vanilla=allow_vanilla)
 
         description_lines = ["Random Total"]
         description_lines += [
