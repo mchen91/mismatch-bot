@@ -1,6 +1,7 @@
+from collections import defaultdict
 import copy
 import random
-from typing import List, Tuple, TypeVar
+from typing import DefaultDict, List, Set, Tuple, TypeVar
 
 from scipy.optimize import linear_sum_assignment
 from sqlalchemy.orm import contains_eager
@@ -135,13 +136,11 @@ def get_best_total_full_mismatch_records(session: Session):
 
 def get_random_total(session: Session):
     records_main_cast = _get_main_cast_records(session)
-    records_by_stage = {}
+    records_by_stage: DefaultDict[int, List[Record]] = defaultdict(list)
     for record in records_main_cast:
-        if record.stage.position not in records_by_stage:
-            records_by_stage[record.stage.position] = []
         if record.time is not None:
             records_by_stage[record.stage.position].append(record)
-    assigned_character_positions: List[int] = set()
+    assigned_character_positions: Set[int] = set()
     stage_pick_order = [
         17,  # YL
         20,  # Puff
