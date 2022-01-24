@@ -663,3 +663,24 @@ class GeneralSlashCommand(commands.Cog):
         description_lines.append(f"Grand Total: {frames_to_time_string(grand_total)}")
         await send_embeds(description_lines, ctx)
         session.close()
+
+    @cog_ext.cog_slash(
+        name="randtotal",
+        description="Displays a randomly assigned mismatch total",
+        guild_ids=GUILD_IDS,
+    )
+    async def rand_total(self, ctx: Context):
+        from use_cases.frame_conversion import frames_to_time_string
+        from use_cases.total import get_random_total
+
+        session = get_session()
+        records, total = get_random_total(session=session)
+
+        description_lines = ["Random Total"]
+        description_lines += [
+            f"{record.character.name}/{record.stage.name} - [{frames_to_time_string(record.time)}]({record.video_link}) - {','.join(player.name for player in record.players)}"
+            for record in records
+        ]
+        description_lines.append(f"Total: {frames_to_time_string(total)}")
+        await send_embeds(description_lines, ctx)
+        session.close()

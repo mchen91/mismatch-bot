@@ -1,4 +1,5 @@
 import copy
+import random
 from typing import List, Tuple, TypeVar
 
 from scipy.optimize import linear_sum_assignment
@@ -130,3 +131,36 @@ def get_best_total_full_mismatch_records(session: Session):
     ]
     total = _calculate_total(assignment, cost_matrix)
     return best_records, total
+
+
+def get_random_total(session: Session):
+    records_main_cast = _get_main_cast_records(session)
+    records_by_stage = {}
+    for record in records_main_cast:
+        if record.stage.position not in records_by_stage:
+            records_by_stage[record.stage.position] = []
+        if record.time is not None:
+            records_by_stage[record.stage.position].append(record)
+    assigned_character_positions: List[int] = set()
+    stage_pick_order = [
+        17,  # YL
+        20,  # Puff
+        5,  # Yoshi
+        0,  # Doc
+        *list(range(1, 5)),
+        *list(range(6, 17)),
+        *list(range(18, 20)),
+        *list(range(21, 25)),
+    ]
+    assignment: List[Record] = []
+    for stage_pos in stage_pick_order:
+        stage_records = [
+            record
+            for record in records_by_stage[stage_pos]
+            if record.character.position not in assigned_character_positions
+        ]
+        random_record = random.choice(stage_records)
+        assignment.append(random_record)
+        assigned_character_positions.add(random_record.character.position)
+    ordered_records = sorted(assignment, key=lambda record: record.character.position)
+    return ordered_records, sum(record.time for record in ordered_records)
