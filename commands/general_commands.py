@@ -1,4 +1,5 @@
 import random
+from decimal import Decimal
 from collections import defaultdict
 from use_cases.embeds import send_embeds
 
@@ -417,6 +418,77 @@ class GeneralSlashCommand(commands.Cog):
         video_link_string = f"at {record.video_link}"
         msg = f"{record.character.name}/{record.stage.name} - {record_value} by {players_string} {video_link_string}"
         await ctx.send(msg)
+        session.close()
+
+    @cog_ext.cog_slash(
+        name="claim",
+        description="Displays a random TTRC5 claim",
+        guild_ids=GUILD_IDS,
+        options=[
+            create_option(
+                name="character",
+                description="Optionally select a character",
+                option_type=str,
+                required=False,
+            ),
+        ],
+        connector={
+            "character": "character_name",
+        },
+    )
+    async def claim(self, ctx: Context, character_name: str = None):
+        from use_cases.records import (
+            get_all_complete_records,
+            get_formatted_record_string,
+        )
+        from use_cases.character import get_character_by_position, get_character_by_name
+
+        session = get_session()
+        claims = [
+            Decimal(str(t))
+            for t in [
+                10,
+                9,
+                3.5,
+                5.5,
+                6.93,
+                7.82,
+                6.70,
+                9.5,
+                9.8,
+                4.87,
+                7.5,
+                12.5,
+                6.9,
+                6.66,
+                6.70,
+                3.7,
+                10,
+                7,
+                8,
+                7.5,
+                7.23,
+                3.9,
+                8.78,
+                9.20,
+                9,
+                9.95,
+            ]
+        ]
+        if character_name:
+            character = get_character_by_name(session=session, name=character_name)
+            claim = claims[character.position]
+        else:
+            random_character_position = random.randint(0, 24)
+            character = get_character_by_position(
+                session=session, position=random_character_position
+            )
+            claim = claims[random_character_position]
+        random_sub_amount = random.choice(
+            [Decimal(str(t)) for t in [0.5, 1, 1.5, 2, 2.5, 3]]
+        )
+        claimed_sub = claim - random_sub_amount
+        await ctx.send(f"Sub {claimed_sub} {character.name}")
         session.close()
 
     @cog_ext.cog_slash(

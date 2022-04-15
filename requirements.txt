@@ -1,7 +1,7 @@
 alembic
 black
 discord.py
-discord-py-interactions
+discord-py-interactions==3.0.2
 Flask
 Flask-Cors
 gunicorn
