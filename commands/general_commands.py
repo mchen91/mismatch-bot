@@ -459,7 +459,6 @@ class GeneralSlashCommand(commands.Cog):
                 4.87,
                 7.5,
                 12.5,
-                6.9,
                 6.66,
                 6.70,
                 3.7,
