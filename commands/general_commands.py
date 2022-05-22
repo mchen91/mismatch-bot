@@ -607,7 +607,7 @@ def register_general_commands(bot: Client):
         ],
     )
     async def _totals(ctx: CommandContext, mode: str, **kwargs):
-        is_sorted = kwargs.get("is_sorted", False)
+        is_sorted = kwargs.get("sorted", False)
         if mode == "character25":
             await _chartotals25(ctx, is_sorted)
         if mode == "character23":
