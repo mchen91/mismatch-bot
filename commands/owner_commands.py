@@ -1,7 +1,7 @@
 from use_cases.records import RecordNotBetterException
 from interactions import Client, CommandContext, Option, OptionType, Permissions
 
-from commands.constants import GUILD_IDS, PERSONAL_SERVER_GUILD_ID, STADIUM_GUILD_ID
+from commands.constants import GUILD_IDS#, PERSONAL_SERVER_GUILD_ID, STADIUM_GUILD_ID
 from db import get_session
 
 MY_ID = 97904188918345728
