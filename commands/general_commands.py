@@ -628,12 +628,15 @@ def register_general_commands(bot: Client):
         description_lines = [
             f"25 Stage Totals for each Character{' (sorted)' if is_sorted else ''}"
         ]
+        total_25x25 = 0
         grand_total = 0
         char_to_total_tuples = []
         for character in characters(session=session):
             records = get_records_by_character(session=session, character=character)
             frames_25_stages = get_25_stage_total(records=records)
             char_to_total_tuples.append((character, frames_25_stages))
+            if character.position < 25:
+                total_25x25 += frames_25_stages
             grand_total += get_total(records=records)
         if is_sorted:
             char_to_total_tuples = sorted(
@@ -644,6 +647,7 @@ def register_general_commands(bot: Client):
             description_lines.append(
                 f"{character.name} - {frames_to_time_string(total)}"
             )
+        description_lines.append(f"25x25 Total: {frames_to_time_string(total_25x25)}")
         description_lines.append(f"Grand Total: {frames_to_time_string(grand_total)}")
         await send_embeds(description_lines, ctx)
         session.close()
