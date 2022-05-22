@@ -1,46 +1,41 @@
 import random
 from decimal import Decimal
 from collections import defaultdict
+from typing import Optional
 from use_cases.embeds import send_embeds
-
-from discord.ext import commands
-from discord.ext.commands.context import Context
-from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_choice, create_option
+from interactions import Choice, Client, CommandContext, Option, OptionType
 
 from db import get_session
 from commands.constants import GUILD_IDS
 
 
-class GeneralSlashCommand(commands.Cog):
-    @cog_ext.cog_slash(
+def register_general_commands(bot: Client):
+    @bot.command(
         name="wr",
         description="Provides the world record for a given character and stage",
-        guild_ids=GUILD_IDS,
+        scope=GUILD_IDS,
         options=[
-            create_option(
+            Option(
                 name="character",
                 description="Choose a character for the WR",
-                option_type=str,
+                type=OptionType.STRING,
                 required=True,
                 # limited to 25 choices - we have 32 characters
                 # choices=[create_choice(name=char, value=char) for char in CHARACTERS],
             ),
-            create_option(
+            Option(
                 name="stage",
                 description="Choose a stage for the WR",
-                option_type=str,
+                type=OptionType.STRING,
                 required=True,
                 # limited to 25 choices - we have 26 stages
                 # choices=[create_choice(name=stage, value=stage) for stage in STAGES],
             ),
         ],
-        connector={
-            "character": "character_name",
-            "stage": "stage_name",
-        },
     )
-    async def wr(self, ctx: SlashContext, character_name: str, stage_name: str):
+    async def _wr(ctx: CommandContext, **kwargs):
+        character_name: str = kwargs["character"]
+        stage_name: str = kwargs["stage"]
         from use_cases.character import get_character_by_name
         from use_cases.records import get_record, get_formatted_record_string
         from use_cases.stage import get_stage_by_name
@@ -63,34 +58,30 @@ class GeneralSlashCommand(commands.Cog):
         await ctx.send(msg)
         session.close()
 
-    @cog_ext.cog_slash(
+    @bot.command(
         name="char",
         description="Shows records for a given character",
-        guild_ids=GUILD_IDS,
+        scope=GUILD_IDS,
         options=[
-            create_option(
+            Option(
                 name="character",
                 description="Choose a character",
-                option_type=3,
+                type=OptionType.STRING,
                 required=True,
                 # limited to 25 choices - we have 32 characters
                 # choices=[create_choice(name=char, value=char) for char in CHARACTERS],
             ),
-            create_option(
+            Option(
                 name="sorted",
                 description="Order by fastest to slowest",
-                option_type=5,
+                type=OptionType.BOOLEAN,
                 required=False,
                 # limited to 25 choices - we have 26 stages
                 # choices=[create_choice(name=stage, value=stage) for stage in STAGES],
             ),
         ],
-        connector={
-            "character": "character_name",
-            "sorted": "is_sorted",
-        },
     )
-    async def char(self, ctx: Context, character_name: str, is_sorted: bool = False):
+    async def _char(ctx: CommandContext, **kwargs):
         from use_cases.character import get_character_by_name
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
@@ -101,6 +92,8 @@ class GeneralSlashCommand(commands.Cog):
             get_records_by_character,
         )
 
+        character_name: str = kwargs["character"]
+        is_sorted: bool = kwargs.get("sorted", False)
         session = get_session()
         character = get_character_by_name(session=session, name=character_name)
         records = get_records_by_character(session=session, character=character)
@@ -137,34 +130,30 @@ class GeneralSlashCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-    @cog_ext.cog_slash(
+    @bot.command(
         name="stage",
         description="Shows records for a given stage",
-        guild_ids=GUILD_IDS,
+        scope=GUILD_IDS,
         options=[
-            create_option(
+            Option(
                 name="stage",
                 description="Choose a stage",
-                option_type=3,
+                type=OptionType.STRING,
                 required=True,
                 # limited to 25 choices - we have 32 characters
                 # choices=[create_choice(name=char, value=char) for char in CHARACTERS],
             ),
-            create_option(
+            Option(
                 name="sorted",
                 description="Order by fastest to slowest (default: False)",
-                option_type=5,
+                type=OptionType.BOOLEAN,
                 required=False,
                 # limited to 25 choices - we have 26 stages
                 # choices=[create_choice(name=stage, value=stage) for stage in STAGES],
             ),
         ],
-        connector={
-            "stage": "stage_name",
-            "sorted": "is_sorted",
-        },
     )
-    async def stage(self, ctx: Context, stage_name: str, is_sorted: bool = False):
+    async def _stage(ctx: CommandContext, **kwargs):
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.records import (
@@ -174,6 +163,8 @@ class GeneralSlashCommand(commands.Cog):
         )
         from use_cases.stage import get_stage_by_name
 
+        stage_name: str = kwargs["stage"]
+        is_sorted: bool = kwargs.get("sorted", False)
         session = get_session()
         stage = get_stage_by_name(session=session, name=stage_name)
         records = get_records_by_stage(session=session, stage=stage)
@@ -206,25 +197,25 @@ class GeneralSlashCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-    @cog_ext.cog_slash(
+    @bot.command(
         name="recordcount",
         description="Displays the record count for each player",
-        guild_ids=GUILD_IDS,
+        scope=GUILD_IDS,
         options=[
-            create_option(
+            Option(
                 name="mode",
                 description="Optionally choose between mismatch only, vanilla only, or all records (default: all)",
-                option_type=3,
+                type=OptionType.STRING,
                 choices=[
-                    create_choice(
+                    Choice(
                         name="All (default)",
                         value="all",
                     ),
-                    create_choice(
+                    Choice(
                         name="Mismatch only",
                         value="mismatch-only",
                     ),
-                    create_choice(
+                    Choice(
                         name="Vanilla only",
                         value="vanilla-only",
                     ),
@@ -233,7 +224,7 @@ class GeneralSlashCommand(commands.Cog):
             ),
         ],
     )
-    async def recordcount(self, ctx: Context, mode: str = "all"):
+    async def _recordcount(ctx: CommandContext, mode: str = "all"):
         from use_cases.embeds import send_embeds
         from use_cases.records import get_all_records, is_vanilla_record
 
@@ -261,12 +252,12 @@ class GeneralSlashCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-    @cog_ext.cog_slash(
+    @bot.command(
         name="primes",
         description="Displays the number of records with a prime frame count or targets completed",
-        guild_ids=GUILD_IDS,
+        scope=GUILD_IDS,
     )
-    async def primes(self, ctx: Context):
+    async def primes(ctx: CommandContext):
         from use_cases.primes import is_prime
         from use_cases.records import get_all_records
 
@@ -287,33 +278,33 @@ class GeneralSlashCommand(commands.Cog):
         await ctx.send("\n".join(msg_lines))
         session.close()
 
-    @cog_ext.cog_slash(
+    @bot.command(
         name="compare",
         description="Compare times between two characters",
-        guild_ids=GUILD_IDS,
+        scope=GUILD_IDS,
         options=[
-            create_option(
+            Option(
                 name="character1",
                 description="First character to compare",
-                option_type=str,
+                type=OptionType.STRING,
                 required=True,
             ),
-            create_option(
+            Option(
                 name="character2",
                 description="Second character to compare",
-                option_type=3,
+                type=OptionType.STRING,
                 required=True,
             ),
-            create_option(
+            Option(
                 name="sort_by",
                 description="Optionally choose how to sort the results",
-                option_type=str,
+                type=OptionType.STRING,
                 choices=[
-                    create_choice(
+                    Choice(
                         name="Stage (default)",
                         value="stage",
                     ),
-                    create_choice(
+                    Choice(
                         name="Delta",
                         value="delta",
                     ),
@@ -322,8 +313,8 @@ class GeneralSlashCommand(commands.Cog):
             ),
         ],
     )
-    async def compare(
-        self, ctx: Context, character1: str, character2: str, sort_by: str = "stage"
+    async def _compare(
+        ctx: CommandContext, character1: str, character2: str, sort_by: str = "stage"
     ):
         from use_cases.character import get_character_by_name
         from use_cases.embeds import send_embeds
@@ -399,12 +390,12 @@ class GeneralSlashCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-    @cog_ext.cog_slash(
+    @bot.command(
         name="random",
         description="Displays a random mismatch record",
-        guild_ids=GUILD_IDS,
+        scope=GUILD_IDS,
     )
-    async def random(self, ctx: Context):
+    async def _random(ctx: CommandContext):
         from use_cases.records import (
             get_all_complete_records,
             get_formatted_record_string,
@@ -420,29 +411,23 @@ class GeneralSlashCommand(commands.Cog):
         await ctx.send(msg)
         session.close()
 
-    @cog_ext.cog_slash(
+    @bot.command(
         name="claim",
         description="Displays a random TTRC5 claim",
-        guild_ids=GUILD_IDS,
+        scope=GUILD_IDS,
         options=[
-            create_option(
+            Option(
                 name="character",
                 description="Optionally select a character",
-                option_type=str,
+                type=OptionType.STRING,
                 required=False,
             ),
         ],
-        connector={
-            "character": "character_name",
-        },
     )
-    async def claim(self, ctx: Context, character_name: str = None):
-        from use_cases.records import (
-            get_all_complete_records,
-            get_formatted_record_string,
-        )
+    async def _claim(ctx: CommandContext, **kwargs):
         from use_cases.character import get_character_by_position, get_character_by_name
 
+        character_name: Optional[str] = kwargs.get("character", None)
         session = get_session()
         claims = [
             Decimal(str(t))
@@ -490,12 +475,12 @@ class GeneralSlashCommand(commands.Cog):
         await ctx.send(f"Sub {claimed_sub} {character.name}")
         session.close()
 
-    @cog_ext.cog_slash(
+    @bot.command(
         name="wt",
         description="Displays the assignment of characters to stages that results in the worst total",
-        guild_ids=GUILD_IDS,
+        scope=GUILD_IDS,
     )
-    async def wt(self, ctx: Context):
+    async def _wt(ctx: CommandContext):
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.total import get_worst_total_records
@@ -512,20 +497,20 @@ class GeneralSlashCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-    @cog_ext.cog_slash(
+    @bot.command(
         name="bt",
         description="Displays the assignment of characters to stages that results in the best total",
-        guild_ids=GUILD_IDS,
+        scope=GUILD_IDS,
         options=[
-            create_option(
+            Option(
                 name="allow_vanilla",
                 description="Allow vanilla pairings (default: False)",
-                option_type=5,
+                type=OptionType.BOOLEAN,
                 required=False,
             ),
         ],
     )
-    async def bt(self, ctx: Context, allow_vanilla: bool = False):
+    async def _bt(ctx: CommandContext, allow_vanilla: bool = False):
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.total import (
@@ -552,12 +537,12 @@ class GeneralSlashCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-    @cog_ext.cog_slash(
+    @bot.command(
         name="stagerecords",
         description="Displays the fastest records for each stage",
-        guild_ids=GUILD_IDS,
+        scope=GUILD_IDS,
     )
-    async def stagerecords(self, ctx: Context):
+    async def _stagerecords(ctx: CommandContext):
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.records import (
@@ -588,51 +573,49 @@ class GeneralSlashCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-    @cog_ext.cog_slash(
+    @bot.command(
         name="totals",
         description="List either char or stage totals",
-        guild_ids=GUILD_IDS,
+        scope=GUILD_IDS,
         options=[
-            create_option(
+            Option(
                 name="mode",
                 description="Choose between totals for each character or for each stage",
-                option_type=3,
+                type=OptionType.STRING,
                 required=True,
                 choices=[
-                    create_choice(
+                    Choice(
                         name="character totals (25 stage)",
                         value="character25",
                     ),
-                    create_choice(
+                    Choice(
                         name="character totals (23 stage)",
                         value="character23",
                     ),
-                    create_choice(
+                    Choice(
                         name="stage totals",
                         value="stage",
                     ),
                 ],
             ),
-            create_option(
+            Option(
                 name="sorted",
                 description="Order by fastest to slowest (default: False)",
-                option_type=5,
+                type=OptionType.BOOLEAN,
                 required=False,
             ),
         ],
-        connector={
-            "sorted": "is_sorted",
-        },
     )
-    async def totals(self, ctx: Context, mode: str, is_sorted: bool = False):
+    async def _totals(ctx: CommandContext, mode: str, **kwargs):
+        is_sorted = kwargs.get("is_sorted", False)
         if mode == "character25":
-            await self._chartotals25(ctx, is_sorted)
+            await _chartotals25(ctx, is_sorted)
         if mode == "character23":
-            await self._chartotals23(ctx, is_sorted)
+            await _chartotals23(ctx, is_sorted)
         elif mode == "stage":
-            await self._stagetotals(ctx, is_sorted)
+            await _stagetotals(ctx, is_sorted)
 
-    async def _chartotals25(self, ctx: Context, is_sorted: bool):
+    async def _chartotals25(ctx: CommandContext, is_sorted: bool):
         from use_cases.character import characters
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.records import (
@@ -665,7 +648,7 @@ class GeneralSlashCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-    async def _chartotals23(self, ctx: Context, is_sorted: bool):
+    async def _chartotals23(ctx: CommandContext, is_sorted: bool):
         from use_cases.character import characters
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.records import (
@@ -701,7 +684,7 @@ class GeneralSlashCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-    async def _stagetotals(self, ctx: Context, is_sorted: bool):
+    async def _stagetotals(ctx: CommandContext, is_sorted: bool):
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.records import (
             get_25_character_total,
@@ -735,20 +718,20 @@ class GeneralSlashCommand(commands.Cog):
         await send_embeds(description_lines, ctx)
         session.close()
 
-    @cog_ext.cog_slash(
+    @bot.command(
         name="randtotal",
         description="Displays a randomly assigned mismatch total",
-        guild_ids=GUILD_IDS,
+        scope=GUILD_IDS,
         options=[
-            create_option(
+            Option(
                 name="allow_vanilla",
                 description="Allow vanilla pairings (default: False)",
-                option_type=5,
+                type=OptionType.BOOLEAN,
                 required=False,
             ),
         ],
     )
-    async def rand_total(self, ctx: Context, allow_vanilla: bool = False):
+    async def _rand_total(ctx: CommandContext, allow_vanilla: bool = False):
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.total import get_random_total
 

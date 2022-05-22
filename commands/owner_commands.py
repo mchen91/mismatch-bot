@@ -1,9 +1,5 @@
 from use_cases.records import RecordNotBetterException
-from discord.ext import commands
-from discord.ext.commands.context import Context
-from discord_slash import cog_ext
-from discord_slash.model import SlashCommandPermissionType
-from discord_slash.utils.manage_commands import create_option, create_permission
+from interactions import Client, CommandContext, Option, OptionType, Permissions
 
 from commands.constants import GUILD_IDS, PERSONAL_SERVER_GUILD_ID, STADIUM_GUILD_ID
 from db import get_session
@@ -11,60 +7,60 @@ from db import get_session
 MY_ID = 97904188918345728
 
 
-class OwnerSlashCommand(commands.Cog):
-    @cog_ext.cog_slash(
+def register_owner_commands(bot: Client):
+    @bot.command(
         name="add-wr",
         description="Add a new WR",
-        guild_ids=GUILD_IDS,
+        scope=GUILD_IDS,
         options=[
-            create_option(
+            Option(
                 name="character_name",
                 description="Choose a character for the WR",
-                option_type=3,
+                type=OptionType.STRING,
                 required=True,
                 # limited to 25 choices - we have 32 characters
                 # choices=[create_choice(name=char, value=char) for char in CHARACTERS],
             ),
-            create_option(
+            Option(
                 name="stage_name",
                 description="Choose a stage for the WR",
-                option_type=3,
+                type=OptionType.STRING,
                 required=True,
                 # limited to 25 choices - we have 26 stages
                 # choices=[create_choice(name=stage, value=stage) for stage in STAGES],
             ),
-            create_option(
+            Option(
                 name="time_string",
                 description="The record value",
-                option_type=3,
+                type=OptionType.STRING,
                 required=True,
             ),
-            create_option(
+            Option(
                 name="player_name",
                 description="User who set the record",
-                option_type=3,
+                type=OptionType.STRING,
                 required=True,
             ),
-            create_option(
+            Option(
                 name="video_link",
                 description="Link to the video",
-                option_type=3,
+                type=OptionType.STRING,
                 required=True,
             ),
         ],
-        permissions={
-            PERSONAL_SERVER_GUILD_ID: [
-                create_permission(MY_ID, SlashCommandPermissionType.USER, True)
-            ],
-            STADIUM_GUILD_ID: [
-                create_permission(MY_ID, SlashCommandPermissionType.USER, True)
-            ],
-        },
-        default_permission=False,
+        default_member_permissions=Permissions.ADMINISTRATOR,
+        # permissions={
+        #     PERSONAL_SERVER_GUILD_ID: [
+        #         create_permission(MY_ID, SlashCommandPermissionType.USER, True)
+        #     ],
+        #     STADIUM_GUILD_ID: [
+        #         create_permission(MY_ID, SlashCommandPermissionType.USER, True)
+        #     ],
+        # },
+        # default_permission=False,
     )
-    async def add(
-        self,
-        ctx: Context,
+    async def _add(
+        ctx: CommandContext,
         character_name: str,
         stage_name: str,
         time_string: str,
@@ -89,6 +85,9 @@ class OwnerSlashCommand(commands.Cog):
             get_25_stage_total,
         )
         from use_cases.stage import get_stage_by_name
+
+        if ctx.author.id != 97904188918345728:
+            return await ctx.send("get outta here")
 
         # from use_cases.total import get_best_total_records, get_best_total_full_mismatch_records, get_worst_total_records
 
