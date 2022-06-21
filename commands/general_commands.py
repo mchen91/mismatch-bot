@@ -400,16 +400,26 @@ def register_general_commands(bot: Client):
             get_all_complete_records,
             get_formatted_record_string,
         )
+        print("TESTING RANDOM 0")
 
         session = get_session()
+        print("TESTING RANDOM 1")
         complete_records = get_all_complete_records(session=session)
+        print("TESTING RANDOM 2")
         record = random.choice(complete_records)
+        print("TESTING RANDOM 3")
         players_string = ",".join(player.name for player in record.players)
+        print("TESTING RANDOM 4")
         record_value = get_formatted_record_string(record=record)
+        print("TESTING RANDOM 5")
         video_link_string = f"at {record.video_link}"
+        print("TESTING RANDOM 6")
         msg = f"{record.character.name}/{record.stage.name} - {record_value} by {players_string} {video_link_string}"
+        print("TESTING RANDOM 7")
         await ctx.send(msg)
+        print("TESTING RANDOM 8")
         session.close()
+        print("TESTING RANDOM 9")
 
     @bot.command(
         name="claim",
