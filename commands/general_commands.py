@@ -323,6 +323,7 @@ def register_general_commands(bot: Client):
             compare_record_pair,
             get_23_stage_total,
             get_25_stage_total,
+            get_common_stage_totals,
             get_formatted_record_string,
             get_records_by_character,
         )
@@ -386,6 +387,15 @@ def register_general_commands(bot: Client):
         ]
         description_lines.append(
             f"25 Stage Total: {' vs. '.join(time_strings_25_stages_MULTI)}"
+        )
+        (frames_common_stages_MULTI, num_common_stages) = get_common_stage_totals(
+            record_lists=records_MULTI
+        )
+        time_strings_common_stages_MULTI = [
+            frames_to_time_string(frames) for frames in frames_common_stages_MULTI
+        ]
+        description_lines.append(
+            f"Common ({num_common_stages}) Stage Total: {' vs. '.join(time_strings_common_stages_MULTI)}"
         )
         await send_embeds(description_lines, ctx)
         session.close()

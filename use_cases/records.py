@@ -159,6 +159,18 @@ def get_25_stage_total(*, records: List[Record]):
     )
 
 
+def get_common_stage_totals(*, record_lists: List[List[Record]]):
+    num_common_stages = 0
+    totals = [0] * len(record_lists)
+    for records in zip(*record_lists):
+        if any(record.stage.position > 24 for record in records):
+            continue
+        if all(record.time is not None for record in records):
+            num_common_stages += 1
+            totals = [total + record.time for (record, total) in zip(records, totals)]
+    return (totals, num_common_stages)
+
+
 def get_25_character_total(*, records: List[Record]):
     return sum(
         record.time
