@@ -18,6 +18,7 @@ def add_record(
     time: int = None,
     partial_targets: int = None,
     video_link: str = None,
+    force: bool = False,
 ):
     prev_records = session.query(Record).filter(
         Record.character == character,
@@ -45,7 +46,7 @@ def add_record(
                 record.players.append(player)
                 if not record.video_link and video_link:
                     record.video_link = video_link
-            elif time < record.time:
+            elif time < record.time or force:
                 record.time = time
                 record.video_link = video_link
                 record.players = [player]

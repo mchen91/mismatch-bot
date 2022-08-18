@@ -47,6 +47,12 @@ def register_owner_commands(bot: Client):
                 type=OptionType.STRING,
                 required=True,
             ),
+            Option(
+                name="force",
+                description="Overwrite existing record regardless of time",
+                type=OptionType.BOOLEAN,
+                required=False,
+            ),
         ],
         default_member_permissions=Permissions.ADMINISTRATOR,
         # permissions={
@@ -66,6 +72,7 @@ def register_owner_commands(bot: Client):
         time_string: str,
         player_name: str,
         video_link: str,
+        force: bool = False,
     ):
         from use_cases.character import get_character_by_name
         from use_cases.embeds import send_embeds
@@ -141,6 +148,7 @@ def register_owner_commands(bot: Client):
                 time=time,
                 partial_targets=partial_targets,
                 video_link=video_link,
+                force=force,
             )
         except RecordNotBetterException:
             await ctx.send(f"Did not add; worse than existing record")
