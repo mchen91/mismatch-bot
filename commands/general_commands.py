@@ -447,7 +447,16 @@ def register_general_commands(bot: Client):
         try:
             record = random.choice(complete_records)
         except IndexError:
-            msg = f"No records found for player {player.name}"
+            char_substr = f"character {character.name}" if character else ""
+            stage_substr = f"stage {stage.name}" if stage else ""
+            player_substr = f"player {player.name}" if player else ""
+            substrs = [
+                substr
+                for substr in [char_substr, stage_substr, player_substr]
+                if substr
+            ]
+            complete_substr = ", ".join(substrs)
+            msg = f"No records found for {complete_substr}"
         else:
             players_string = ",".join(player.name for player in record.players)
             record_value = get_formatted_record_string(record=record)
