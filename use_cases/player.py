@@ -1,3 +1,4 @@
+from difflib import SequenceMatcher
 from sqlalchemy.orm.session import Session
 
 from models import Player, PlayerAlias
@@ -8,6 +9,16 @@ def get_player_by_name(*, session: Session, name: str):
     if not alias:
         raise ValueError(f'Could not find player matching "{name}"')
     return alias.player
+
+
+def guess_player_by_name(*, session: Session, name: str):
+    closest_alias = max(
+        session.query(PlayerAlias).all(),
+        key=lambda alias: SequenceMatcher(
+            lambda x: x in " .", alias.name.lower(), name.lower()
+        ).ratio(),
+    )
+    return closest_alias.player
 
 
 def create_player(*, session: Session, name: str):

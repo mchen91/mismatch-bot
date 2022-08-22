@@ -404,20 +404,55 @@ def register_general_commands(bot: Client):
         name="random",
         description="Displays a random mismatch record",
         scope=GUILD_IDS,
+        options=[
+            Option(
+                name="character",
+                description="Choose a character (optional)",
+                type=OptionType.STRING,
+                required=False,
+            ),
+            Option(
+                name="stage",
+                description="Choose a stage (optional)",
+                type=OptionType.STRING,
+                required=False,
+            ),
+            Option(
+                name="player",
+                description="Choose a player (optional)",
+                type=OptionType.STRING,
+                required=False,
+            ),
+        ],
     )
-    async def _random(ctx: CommandContext):
+    async def _random(ctx: CommandContext, character=None, stage=None, player=None):
+        from use_cases.character import get_character_by_name
+        from use_cases.stage import get_stage_by_name
+        from use_cases.player import guess_player_by_name
         from use_cases.records import (
-            get_all_complete_records,
+            get_complete_records,
             get_formatted_record_string,
         )
 
         session = get_session()
-        complete_records = get_all_complete_records(session=session)
-        record = random.choice(complete_records)
-        players_string = ",".join(player.name for player in record.players)
-        record_value = get_formatted_record_string(record=record)
-        video_link_string = f"at {record.video_link}"
-        msg = f"{record.character.name}/{record.stage.name} - {record_value} by {players_string} {video_link_string}"
+        if character:
+            character = get_character_by_name(session=session, name=character)
+        if stage:
+            stage = get_stage_by_name(session=session, name=stage)
+        if player:
+            player = guess_player_by_name(session=session, name=player)
+        complete_records = get_complete_records(
+            session=session, character=character, stage=stage, player=player
+        )
+        try:
+            record = random.choice(complete_records)
+        except IndexError:
+            msg = f"No records found for player {player.name}"
+        else:
+            players_string = ",".join(player.name for player in record.players)
+            record_value = get_formatted_record_string(record=record)
+            video_link_string = f"at {record.video_link}"
+            msg = f"{record.character.name}/{record.stage.name} - {record_value} by {players_string} {video_link_string}"
         await ctx.send(msg)
         session.close()
 

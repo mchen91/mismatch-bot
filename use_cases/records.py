@@ -87,14 +87,22 @@ def get_all_records(*, session: Session) -> List[Record]:
     )
 
 
-def get_all_complete_records(*, session: Session) -> List[Record]:
-    return (
+def get_complete_records(
+    *, session: Session, character: Character, stage: Stage, player: Player
+) -> List[Record]:
+    complete_records = (
         session.query(Record)
         .join(Record.players)
         .options(contains_eager(Record.players))
         .filter(Record.partial_targets == None)
-        .all()
     )
+    if character:
+        complete_records = complete_records.filter(Record.character == character)
+    if stage:
+        complete_records = complete_records.filter(Record.stage == stage)
+    if player:
+        complete_records = complete_records.filter(Record.players.contains(player))
+    return complete_records.all()
 
 
 def get_records_by_character(*, session: Session, character: Character) -> List[Record]:
