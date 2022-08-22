@@ -36,14 +36,14 @@ def register_general_commands(bot: Client):
     async def _wr(ctx: CommandContext, **kwargs):
         character_name: str = kwargs["character"]
         stage_name: str = kwargs["stage"]
-        from use_cases.character import get_character_by_name
+        from use_cases.character import guess_character_by_name
         from use_cases.records import get_record, get_formatted_record_string
-        from use_cases.stage import get_stage_by_name
+        from use_cases.stage import guess_stage_by_name
 
         session = get_session()
-        character = get_character_by_name(session=session, name=character_name)
+        character = guess_character_by_name(session=session, name=character_name)
 
-        stage = get_stage_by_name(session=session, name=stage_name)
+        stage = guess_stage_by_name(session=session, name=stage_name)
         record = get_record(session=session, character=character, stage=stage)
 
         if record:
@@ -82,7 +82,7 @@ def register_general_commands(bot: Client):
         ],
     )
     async def _char(ctx: CommandContext, **kwargs):
-        from use_cases.character import get_character_by_name
+        from use_cases.character import guess_character_by_name
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.records import (
@@ -95,7 +95,7 @@ def register_general_commands(bot: Client):
         character_name: str = kwargs["character"]
         is_sorted: bool = kwargs.get("sorted", False)
         session = get_session()
-        character = get_character_by_name(session=session, name=character_name)
+        character = guess_character_by_name(session=session, name=character_name)
         records = get_records_by_character(session=session, character=character)
         description_lines = [
             f"{character.name} Character Records{' (sorted)' if is_sorted else ''}"
@@ -161,12 +161,12 @@ def register_general_commands(bot: Client):
             get_formatted_record_string,
             get_records_by_stage,
         )
-        from use_cases.stage import get_stage_by_name
+        from use_cases.stage import guess_stage_by_name
 
         stage_name: str = kwargs["stage"]
         is_sorted: bool = kwargs.get("sorted", False)
         session = get_session()
-        stage = get_stage_by_name(session=session, name=stage_name)
+        stage = guess_stage_by_name(session=session, name=stage_name)
         records = get_records_by_stage(session=session, stage=stage)
         if is_sorted:
             records = sorted(
@@ -316,7 +316,7 @@ def register_general_commands(bot: Client):
     async def _compare(
         ctx: CommandContext, character1: str, character2: str, sort_by: str = "stage"
     ):
-        from use_cases.character import get_character_by_name
+        from use_cases.character import guess_character_by_name
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import frames_to_time_string
         from use_cases.records import (
@@ -332,7 +332,7 @@ def register_general_commands(bot: Client):
 
         session = get_session()
         characters = [
-            get_character_by_name(session=session, name=char_name)
+            guess_character_by_name(session=session, name=char_name)
             for char_name in char_names
         ]
         records_MULTI = [
@@ -426,8 +426,8 @@ def register_general_commands(bot: Client):
         ],
     )
     async def _random(ctx: CommandContext, character=None, stage=None, player=None):
-        from use_cases.character import get_character_by_name
-        from use_cases.stage import get_stage_by_name
+        from use_cases.character import guess_character_by_name
+        from use_cases.stage import guess_stage_by_name
         from use_cases.player import guess_player_by_name
         from use_cases.records import (
             get_complete_records,
@@ -436,9 +436,9 @@ def register_general_commands(bot: Client):
 
         session = get_session()
         if character:
-            character = get_character_by_name(session=session, name=character)
+            character = guess_character_by_name(session=session, name=character)
         if stage:
-            stage = get_stage_by_name(session=session, name=stage)
+            stage = guess_stage_by_name(session=session, name=stage)
         if player:
             player = guess_player_by_name(session=session, name=player)
         complete_records = get_complete_records(
@@ -470,7 +470,10 @@ def register_general_commands(bot: Client):
         ],
     )
     async def _claim(ctx: CommandContext, **kwargs):
-        from use_cases.character import get_character_by_position, get_character_by_name
+        from use_cases.character import (
+            get_character_by_position,
+            guess_character_by_name,
+        )
 
         character_name: Optional[str] = kwargs.get("character", None)
         session = get_session()
@@ -505,7 +508,7 @@ def register_general_commands(bot: Client):
             ]
         ]
         if character_name:
-            character = get_character_by_name(session=session, name=character_name)
+            character = guess_character_by_name(session=session, name=character_name)
             claim = claims[character.position]
         else:
             random_character_position = random.randint(0, 24)

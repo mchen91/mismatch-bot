@@ -19,10 +19,10 @@ depends_on = None
 def upgrade():
     from models import Character, Stage
     from use_cases.aliases import add_char_stage_alias, add_player_alias
-    from use_cases.character import get_character_by_name
+    from use_cases.character import guess_character_by_name
     from use_cases.player import get_player_by_name
     from use_cases.records import add_record, get_record
-    from use_cases.stage import get_stage_by_name
+    from use_cases.stage import guess_stage_by_name
 
     connection = op.get_bind()
     Session = sa.orm.sessionmaker()
@@ -208,8 +208,8 @@ YL on Pichu	4.13	megaqwertification
             char_string, stage_string = cur_combo.split(" on ")
         else:
             char_string = stage_string = cur_combo
-        character = get_character_by_name(session=session, name=char_string)
-        stage = get_stage_by_name(session=session, name=stage_string)
+        character = guess_character_by_name(session=session, name=char_string)
+        stage = guess_stage_by_name(session=session, name=stage_string)
         player = get_player_by_name(session=session, name=player_string)
         record = get_record(session=session, character=character, stage=stage)
         # skipping Seak records for now

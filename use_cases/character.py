@@ -5,7 +5,7 @@ from models import Character, CharacterStageAlias
 from use_cases.aliases import add_char_stage_alias
 
 
-def get_character_by_name(*, session: Session, name: str):
+def guess_character_by_name(*, session: Session, name: str):
     all_aliases = (
         session.query(CharacterStageAlias)
         .filter(CharacterStageAlias.character != None)

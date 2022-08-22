@@ -74,7 +74,7 @@ def register_owner_commands(bot: Client):
         video_link: str,
         force: bool = False,
     ):
-        from use_cases.character import get_character_by_name
+        from use_cases.character import guess_character_by_name
         from use_cases.embeds import send_embeds
         from use_cases.frame_conversion import (
             frames_to_time_string,
@@ -91,7 +91,7 @@ def register_owner_commands(bot: Client):
             get_25_character_total,
             get_25_stage_total,
         )
-        from use_cases.stage import get_stage_by_name
+        from use_cases.stage import guess_stage_by_name
 
         if ctx.author.id != 97904188918345728:
             return await ctx.send("get outta here")
@@ -100,12 +100,12 @@ def register_owner_commands(bot: Client):
 
         session = get_session()
         try:
-            character = get_character_by_name(session=session, name=character_name)
+            character = guess_character_by_name(session=session, name=character_name)
         except ValueError as error:
             await ctx.send(str(error))
             return
         try:
-            stage = get_stage_by_name(session=session, name=stage_name)
+            stage = guess_stage_by_name(session=session, name=stage_name)
         except ValueError as error:
             await ctx.send(str(error))
             return

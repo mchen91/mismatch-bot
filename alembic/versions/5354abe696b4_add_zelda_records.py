@@ -18,7 +18,7 @@ depends_on = None
 
 def upgrade():
     from models import Stage
-    from use_cases.character import get_character_by_name
+    from use_cases.character import guess_character_by_name
     from use_cases.player import get_player_by_name
     from use_cases.records import add_record
 
@@ -33,7 +33,7 @@ def upgrade():
     zelda_frames = zelda_frames_raw.split("\t")
     zelda_videos = zelda_videos_raw.split("\t")
     zelda_players = zelda_players_raw.split("\t")
-    character = get_character_by_name(session=session, name="Zelda")
+    character = guess_character_by_name(session=session, name="Zelda")
     for (stage_index, (frame_string, video_link, player_string)) in enumerate(
         zip(zelda_frames, zelda_videos, zelda_players)
     ):

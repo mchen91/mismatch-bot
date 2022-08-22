@@ -18,10 +18,10 @@ depends_on = None
 
 def upgrade():
     from models import Character
-    from use_cases.character import get_character_by_name
+    from use_cases.character import guess_character_by_name
     from use_cases.player import get_player_by_name
     from use_cases.records import add_record, get_record
-    from use_cases.stage import get_stage_by_name
+    from use_cases.stage import guess_stage_by_name
 
     connection = op.get_bind()
     Session = sa.orm.sessionmaker()
@@ -109,7 +109,7 @@ jenkem66"""
     frames = seak_frames_raw.split("\n")
     videos = seak_videos_raw.split("\n")
     players = seak_players_raw.split("\n")
-    seak_stage = get_stage_by_name(session=session, name="Seak")
+    seak_stage = guess_stage_by_name(session=session, name="Seak")
     for (char_index, (frame_string, video_link, player_string)) in enumerate(
         zip(frames, videos, players)
     ):
@@ -138,7 +138,7 @@ jenkem66"""
         )
     fox_seak_record = get_record(
         session=session,
-        character=get_character_by_name(session=session, name="Fox"),
+        character=guess_character_by_name(session=session, name="Fox"),
         stage=seak_stage,
     )
     for player_string in ["Zampa", "jenkem66"]:

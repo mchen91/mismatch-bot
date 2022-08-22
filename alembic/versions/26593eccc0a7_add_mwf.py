@@ -19,7 +19,7 @@ depends_on = None
 def upgrade():
     from models import Stage
     from use_cases.aliases import add_char_stage_alias
-    from use_cases.character import create_character, get_character_by_name
+    from use_cases.character import create_character, guess_character_by_name
     from use_cases.player import get_player_by_name
     from use_cases.records import add_record
 
@@ -46,7 +46,7 @@ def upgrade():
     frames = frames_raw.split("\t")
     videos = videos_raw.split("\t")
     players = players_raw.split("\t")
-    character = get_character_by_name(session=session, name="M. Wireframe")
+    character = guess_character_by_name(session=session, name="M. Wireframe")
     for (stage_index, (frame_string, video_link, player_string)) in enumerate(
         zip(frames, videos, players)
     ):
