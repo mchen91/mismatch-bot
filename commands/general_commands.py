@@ -489,31 +489,31 @@ def register_general_commands(bot: Client):
         claims = [
             Decimal(str(t))
             for t in [
-                10,
-                9,
-                3.5,
-                5.5,
-                6.93,
-                7.82,
-                6.70,
-                9.5,
-                9.8,
-                4.87,
-                7.5,
-                12.5,
-                6.66,
-                6.70,
-                3.7,
-                10,
-                7,
-                8,
-                7.5,
-                7.23,
-                3.9,
-                8.78,
-                9.20,
-                9,
-                9.95,
+                3, # doc
+                6, # mario 
+                12, # luigi
+                10, # bowser
+                11.11, # peach
+                5, # yoshi
+                12, # dk
+                9, # falcon
+                9, # ganon
+                6.5, # falco
+                5, # fox
+                10, # ness
+                10, # ic
+                12, # kirby
+                7.5, # samus
+                6, # sheik
+                8, # link
+                8, # yl
+                7.5, # pichu
+                10, # pikachu
+                9, # puff
+                9, # mewtwo
+                4, # gw
+                10, # marth
+                11, # roy
             ]
         ]
         if character_name:
