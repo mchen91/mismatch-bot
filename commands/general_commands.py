@@ -495,7 +495,7 @@ def register_general_commands(bot: Client):
                 10, # bowser
                 11.11, # peach
                 5, # yoshi
-                12, # dk
+                11, # dk
                 9, # falcon
                 9, # ganon
                 6.5, # falco
@@ -503,16 +503,16 @@ def register_general_commands(bot: Client):
                 10, # ness
                 10, # ic
                 12, # kirby
-                7.5, # samus
+                7, # samus
                 6, # sheik
-                8, # link
+                6.5, # link
                 8, # yl
-                7.5, # pichu
+                5, # pichu
                 10, # pikachu
                 9, # puff
                 9, # mewtwo
                 4, # gw
-                10, # marth
+                7.5, # marth
                 11, # roy
             ]
         ]
