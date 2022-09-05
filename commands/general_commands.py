@@ -503,7 +503,7 @@ def register_general_commands(bot: Client):
                 10, # ness
                 10, # ic
                 12, # kirby
-                7, # samus
+                4.5, # samus
                 6, # sheik
                 6.5, # link
                 8, # yl
