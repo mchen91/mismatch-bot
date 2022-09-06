@@ -489,7 +489,7 @@ def register_general_commands(bot: Client):
         claims = [
             Decimal(str(t))
             for t in [
-                3, # doc
+                4, # doc
                 6, # mario 
                 12, # luigi
                 10, # bowser
@@ -504,11 +504,11 @@ def register_general_commands(bot: Client):
                 10, # ic
                 12, # kirby
                 4.5, # samus
-                6, # sheik
+                5.5, # sheik
                 6.5, # link
                 8, # yl
                 5, # pichu
-                10, # pikachu
+                8.5, # pikachu
                 9, # puff
                 9, # mewtwo
                 4, # gw
