@@ -491,29 +491,29 @@ def register_general_commands(bot: Client):
             for t in [
                 4, # doc
                 6, # mario 
-                12, # luigi
+                10.5, # luigi
                 10, # bowser
                 11.11, # peach
-                5, # yoshi
-                11, # dk
+                3.5, # yoshi
+                10.5, # dk
                 9, # falcon
                 9, # ganon
                 6.5, # falco
                 5, # fox
                 10, # ness
                 10, # ic
-                12, # kirby
+                11, # kirby
                 4.5, # samus
                 5.5, # sheik
-                6.5, # link
+                4.5, # link
                 8, # yl
                 5, # pichu
                 8.5, # pikachu
-                9, # puff
-                9, # mewtwo
+                8.5, # puff
+                8.5, # mewtwo
                 4, # gw
                 7.5, # marth
-                11, # roy
+                9, # roy
             ]
         ]
         if character_name:
