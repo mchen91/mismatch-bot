@@ -492,25 +492,25 @@ def register_general_commands(bot: Client):
                 4, # doc
                 6, # mario 
                 10.5, # luigi
-                10, # bowser
+                9, # bowser
                 11.11, # peach
-                3.5, # yoshi
+                3, # yoshi
                 10.5, # dk
                 9, # falcon
                 9, # ganon
                 6.5, # falco
-                5, # fox
+                4, # fox
                 10, # ness
                 10, # ic
                 11, # kirby
                 4.5, # samus
                 5.5, # sheik
                 4.5, # link
-                8, # yl
+                7, # yl
                 5, # pichu
-                8.5, # pikachu
+                8, # pikachu
                 8.5, # puff
-                8.5, # mewtwo
+                6, # mewtwo
                 4, # gw
                 7.5, # marth
                 9, # roy
