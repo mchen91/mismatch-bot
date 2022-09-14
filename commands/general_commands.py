@@ -508,7 +508,7 @@ def register_general_commands(bot: Client):
                 4.5, # link
                 7, # yl
                 5, # pichu
-                8, # pikachu
+                7.5, # pikachu
                 8.5, # puff
                 6, # mewtwo
                 4, # gw
