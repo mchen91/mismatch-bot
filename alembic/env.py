@@ -32,7 +32,7 @@ target_metadata = Base.metadata
 # ... etc.
 
 section = config.config_ini_section
-config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL_SUPABASE"])
 
 
 def run_migrations_offline():
