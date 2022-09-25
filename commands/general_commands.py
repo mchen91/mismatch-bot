@@ -493,13 +493,13 @@ def register_general_commands(bot: Client):
                 6,  # mario
                 9.8,  # luigi
                 8.99,  # bowser
-                11.11,  # peach
+                11,  # peach
                 3.5,  # yoshi
                 10.5,  # dk
                 9,  # falcon
                 9,  # ganon
                 6,  # falco
-                4,  # fox
+                3.75,  # fox
                 9,  # ness
                 10,  # ic
                 11,  # kirby
@@ -518,7 +518,11 @@ def register_general_commands(bot: Client):
         ]
         if character_name:
             character = guess_character_by_name(session=session, name=character_name)
-            claim = claims[character.position]
+            # account for ICs
+            if character.position == 26:
+                claim = claims[12]
+            else:
+                claim = claims[character.position]
         else:
             random_character_position = random.randint(0, 24)
             character = get_character_by_position(
