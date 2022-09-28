@@ -506,14 +506,14 @@ def register_general_commands(bot: Client):
                 4.5,  # samus
                 5.5,  # sheik
                 4.5,  # link
-                7,  # yl
+                6.75,  # yl
                 5,  # pichu
                 7.5,  # pikachu
                 8.5,  # puff
                 6,  # mewtwo
                 4,  # gw
                 7.5,  # marth
-                8,  # roy
+                7.75,  # roy
             ]
         ]
         if character_name:
